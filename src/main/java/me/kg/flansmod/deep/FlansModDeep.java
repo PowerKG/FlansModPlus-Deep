@@ -18,7 +18,7 @@ public class FlansModDeep {
 	public static final EventBus event_bus = new EventBus();
 
 	public void preInit(FMLPreInitializationEvent event) {
-
+		
 	}
 
 	public void init(FMLInitializationEvent event) {
