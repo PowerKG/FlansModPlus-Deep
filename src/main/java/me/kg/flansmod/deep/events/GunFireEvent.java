@@ -6,7 +6,7 @@ import com.flansmod.common.guns.BulletType;
 import com.flansmod.common.guns.GunType;
 import com.flansmod.common.guns.ShootableType;
 
-public class GunFireEvent extends FlansGunEvent implements ICancelable {
+public class GunFireEvent extends GunEvent implements ICancelable {
 
 	public final ShootableType bulletType;
 

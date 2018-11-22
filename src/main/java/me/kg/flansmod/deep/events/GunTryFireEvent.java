@@ -4,7 +4,7 @@ import java.util.UUID;
 
 import com.flansmod.common.guns.GunType;
 
-public class GunTryFireEvent extends FlansGunEvent implements ICancelable {
+public class GunTryFireEvent extends GunEvent implements ICancelable {
 
 	private boolean canceled = false;
 
