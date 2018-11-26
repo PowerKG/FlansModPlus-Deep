@@ -3,10 +3,7 @@ package com.flansmod.common.guns;
 import java.util.Collections;
 import java.util.List;
 
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.texture.IIconRegister;
-import net.minecraft.client.settings.GameSettings;
-import net.minecraft.client.settings.KeyBinding;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
@@ -58,16 +55,18 @@ public class ItemBullet extends ItemShootable implements IFlanItem
     	itemIcon = icon.registerIcon("FlansMod:" + type.iconPath);
     }
     
-    @Override
-    public void addInformation(ItemStack stack, EntityPlayer player, List lines, boolean advancedTooltips)
+	@Override
+	public void addInformation(ItemStack stack, EntityPlayer player, List lines, boolean b)
 	{
-		KeyBinding shift = Minecraft.getMinecraft().gameSettings.keyBindSneak;
-		lines.add("°Ïf°Ïn===========°Ï7°ÏlETO°Ïf°Ïn===========");
-		lines.add("°Ïf°Ïl»∫∫≈807687935");
+		if(!type.packName.isEmpty())
+		{
+//			lines.add(type.packName);
+		}
+		if(type.description != null)
+		{
+            Collections.addAll(lines, type.description.split("_"));
+		}
 	}
-		
-			
-		
 
 	//Can be overriden to allow new types of bullets to be created, for planes
 	public EntityShootable getEntity(World worldObj, Vec3 origin, float yaw,

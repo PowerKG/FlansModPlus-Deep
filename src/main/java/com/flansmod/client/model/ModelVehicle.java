@@ -392,12 +392,15 @@ public class ModelVehicle extends ModelDriveable
     			for(ModelRendererTurbo gunModelPart : gunModel[0])
     			{
     				//Yaw and render
+    				GL11.glPushMatrix();
+    				GL11.glScalef(vehicle.getVehicleType().vehicleGunModelScale, vehicle.getVehicleType().vehicleGunModelScale, vehicle.getVehicleType().vehicleGunModelScale);
         			gunModelPart.rotateAngleY = -yaw * 3.14159265F / 180F;
         			gunModelPart.render(f5);
+        			GL11.glPopMatrix();
     			}
 
     			GL11.glPushMatrix();
-    			
+    			GL11.glScalef(vehicle.getVehicleType().vehicleGunModelScale, vehicle.getVehicleType().vehicleGunModelScale, vehicle.getVehicleType().vehicleGunModelScale);
         		//Yaw and pitch, no recoil parts
     			for(ModelRendererTurbo gunModelPart : gunModel[1])
     			{

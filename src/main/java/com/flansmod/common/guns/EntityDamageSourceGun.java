@@ -49,27 +49,8 @@ public class EntityDamageSourceGun extends EntityDamageSourceIndirect {
     			weapon,
     			(killedTeam == null ? "f" : killedTeam.textColour) + player.getCommandSenderName(),
     			(killerTeam == null ? "f" : killerTeam.textColour) + shooter.getCommandSenderName()),
-    		living.dimension);
-    	System.out.println(shooter.getCommandSenderName()+" has killed "+player.getCommandSenderName()+" with "+weapon.name+". TickExisted:"+player.ticksExisted/20+
-    		" KilledPos(X:"+(int)player.posX+" Y:"+(int)player.posY+" Z:"+(int)player.posZ+")"+
-    		" KillerPos(X:"+(int)shooter.posX+" Y:"+(int)shooter.posY+" Z:"+(int)shooter.posZ+")");
-    	
-    	if(player.getCurrentArmor(2) != null){
-    		System.out.println("KilledPlayer:"+player+" wear a "+player.getCurrentArmor(2).getUnlocalizedName());
-    	}else{
-    		System.out.println("KilledPlayer:"+player+" wear nothing.");
-    	}
-
-    	if(shooter.getCurrentArmor(2) != null){
-    		System.out.println("Killer:"+shooter+" wear a "+shooter.getCurrentArmor(2).getUnlocalizedName());
-    	}else{
-    		System.out.println("Killer:"+shooter+" wear nothing.");
-    	}
-
-    	if(player.ticksExisted/20 < FlansMod.noticeSpawnKillTime){
-    		System.out.println("Warning! PlayerName:"+shooter.getCommandSenderName()+" may do SPAWN KILL. Time:"+player.ticksExisted/20+" "+player.getCommandSenderName()+" was killed.");
-    	}
-    	//return new ChatComponentText(shooter.getCommandSenderName()+" has killed "+player.getCommandSenderName()+" with "+weapon+". TickExisted:"+player.ticksExisted/20+" KilledPos(X:"+player.posX+" Y:"+player.posY+" Z:"+player.posZ+")"+" KillerPos(X:"+shooter.posX+" Y:"+shooter.posY+" Z:"+shooter.posZ+")");
+    		    living.dimension);
         return new ChatComponentText("#flansmod");//flanDeath." + weapon.shortName + "." + (killedTeam == null ? "f" : killedTeam.textColour) + player.getCommandSenderName() + "." + (killerTeam == null ? "f" : killerTeam.textColour) + shooter.getCommandSenderName());
     }
+	
 }

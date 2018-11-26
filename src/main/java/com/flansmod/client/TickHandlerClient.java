@@ -359,7 +359,7 @@ public class TickHandlerClient
 				tickcount = 20;
 				EntityBullet.hitCrossHair = false;
 			}
-			if(tickcount > 0)
+			if(tickcount > 0 && FlansMod.hitCrossHairEnable == true)
 			{
 				FlansModClient.minecraft.entityRenderer.setupOverlayRendering();
 				GL11.glEnable(3042 /* GL_BLEND */);

@@ -15,20 +15,11 @@ import com.flansmod.common.types.InfoType;
 
 import cpw.mods.fml.common.Mod.EventHandler;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
-import java.io.File;
-import java.nio.file.Files;
-import java.nio.file.OpenOption;
-import org.apache.logging.log4j.Logger;
-import org.lwjgl.opengl.Display;
 
 public class PlayerDeathEventListener {
 
 	public PlayerDeathEventListener()
 	{
-		
-	      
-	     
-	    
 		MinecraftForge.EVENT_BUS.register(this);
 	}
 

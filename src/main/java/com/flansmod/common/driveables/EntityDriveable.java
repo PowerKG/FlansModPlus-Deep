@@ -6,7 +6,6 @@ import java.util.ArrayList;
 
 import org.lwjgl.opengl.GL11;
 
-import mapwriter.forge.MwForge;
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.entity.Entity;
@@ -748,7 +747,7 @@ public abstract class EntityDriveable extends Entity implements IControllable, I
 		
 		if(weaponType == EnumWeaponType.SHELL)
 			isRecoil = true;
-		
+		if(shootPoint.rootPos.part==null) return;
 		if(!isPartIntact(shootPoint.rootPos.part)) return;
 	
 		if(disabled) return;
@@ -1253,24 +1252,6 @@ public abstract class EntityDriveable extends Entity implements IControllable, I
         		}
         	}
         }
-        
-
-		if(lastAtkEntity != null && lastAtkEntity instanceof EntityPlayer)
-		{
-			if(isShowedPosition && (!worldObj.isRemote || FlansMod.proxy.isThePlayer((EntityPlayer) lastAtkEntity) || FlansMod.proxy.isOnSameTeamClientPlayer((EntityLivingBase) lastAtkEntity)))
-			{
-				MwForge.proxy.addEntityMarker(this, 100);
-			}
-		}
-
-		if(isShowedPosition && tickCount > 0)
-		{
-			tickCount--;
-		}
-		if(tickCount <= 0)
-		{
-			isShowedPosition = false;
-		}
 
 		//Harvest stuff
 		//Aesthetics
@@ -1476,6 +1457,10 @@ public abstract class EntityDriveable extends Entity implements IControllable, I
 			shootDelayPrimary--;
 		if(shootDelaySecondary > 0)
 			shootDelaySecondary--;
+		if(getDriveableType().reloadSoundTick != 15214541 && shootDelayPrimary == getDriveableType().reloadSoundTick)
+		{
+		   PacketPlaySound.sendSoundPacket(posX, posY, posZ, FlansMod.soundRange, dimension, type.shootReloadSound, false);
+		}
 // on first update
 		if(this.ticksExisted == 1)
 		{
@@ -2019,6 +2004,7 @@ public abstract class EntityDriveable extends Entity implements IControllable, I
 	
 	
 	//Collision mechanism mkII
+	@SuppressWarnings("unused")
 	public void moveRiders(Entity rider)
 	{
 		if(isPartOfThis(rider)) return;
@@ -2066,10 +2052,23 @@ public abstract class EntityDriveable extends Entity implements IControllable, I
 		
 		if(test.didCollide){
 		Vector3f finalPos = collideWithDriveable(test, eSpacePosition, eSpaceVelocity);
+		
+		if(finalPos == null) 
+		{
+			finalPos = new Vector3f(0,0,0);
+			if(FlansMod.debugMode) FlansMod.log("EntityDriveable.java moveRiders> finalPos is null [1]");
+		}
+		
 		if(rider instanceof EntityAnimal) return;
 		Vector3f velocity = Vector3f.sub(finalPos, test.basePoint, null);
 		test.ConvertESpaceToR3(velocity);
 		finalPos = new Vector3f(finalPos.x * test.eRad.x, finalPos.y * test.eRad.y, finalPos.z * test.eRad.z);
+		// TODO: Better way to check this
+		if(finalPos == null) 
+		{
+			finalPos = new Vector3f(0,0,0);
+			if(FlansMod.debugMode) FlansMod.log("EntityDriveable.java moveRiders> finalPos is null [2]");
+		}
 		Vector3f diff = Vector3f.sub(finalPos, vehiclePos, null);
 		
 		
@@ -2082,7 +2081,8 @@ public abstract class EntityDriveable extends Entity implements IControllable, I
 		boolean stationary = (throttle == 0);
 		
 		//If finalPos returns null, do something about it. Probably not the best way to handle this.
-		if(finalPos == null) finalPos = new Vector3f(0,0,0);
+		//if(finalPos == null) finalPos = new Vector3f(0,0,0);
+		
 		test.ConvertESpaceToR3(finalPos);
 		boolean onTop = (test.collisionPlaneNormal.y >= 0.5F);
 		if(posY + finalPos.y +10/16F< riderPos.y) finalPos.y = (riderPos.y - (float)posY - 10F/16F);
@@ -2500,6 +2500,7 @@ public abstract class EntityDriveable extends Entity implements IControllable, I
 		return collideWithDriveable(tester, newBasePoint, newVelocityVector);
 	}
 	
+	@SuppressWarnings("unused")
 	public void updateRiderPos (Entity rider, CollisionTest test, Vector3f pos, Vector3f motion)
 	{
 		boolean isDriveable = false;
@@ -2521,7 +2522,11 @@ public abstract class EntityDriveable extends Entity implements IControllable, I
 		
 		//Some rubbish null checks
 		if(nextGlobalPos == null) nextGlobalPos = new Vector3f(0,0,0);
-		if(diff == null) diff = new Vector3f(0,0,0);
+		if(diff == null) 
+		{
+			diff = new Vector3f(0,0,0);
+			if(FlansMod.debugMode) FlansMod.log("EntityDriveable.java updateRidarPos> diff is null [1]");
+		}
 		
 		Vector3f.add(vehicleMotion, diff, diff);
 		rider.setPosition(nextGlobalPos.x + posX + ((hugeBoat)?diff.x/(1.5):0), (!isDriveable)?rider.posY:((EntityDriveable)rider).deckHeight, nextGlobalPos.z + posZ + ((hugeBoat)?diff.z/(1.5):0));
@@ -2767,7 +2772,7 @@ public abstract class EntityDriveable extends Entity implements IControllable, I
 				//Drop each itemstack
         		for(ItemStack stack : drops)
 				{
-					worldObj.spawnEntityInWorld(new EntityItem(worldObj, posX + pos.x, posY + pos.y, posZ + pos.z, stack.copy()));
+					//worldObj.spawnEntityInWorld(new EntityItem(worldObj, posX + pos.x, posY + pos.y, posZ + pos.z, stack.copy()));
 				}
 			}
 			dropItemsOnPartDeath(pos, part);
@@ -2816,8 +2821,8 @@ public abstract class EntityDriveable extends Entity implements IControllable, I
 
 	public boolean isPartIntact(EnumDriveablePart part)
 	{
-		DriveablePart thisPart = getDriveableData().parts.get(part);
-		return thisPart.maxHealth == 0 || thisPart.health > 0;
+        DriveablePart thisPart = getDriveableData().parts.get(part);
+        return thisPart.maxHealth == 0 || thisPart.health > 0;
 	}
 
 	public abstract boolean hasMouseControlMode();

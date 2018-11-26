@@ -37,10 +37,6 @@ public class ItemPart extends Item implements IFlanItem
 	@Override
 	public void addInformation(ItemStack par1ItemStack, EntityPlayer par2EntityPlayer, List par3List, boolean par4)
 	{
-		if(!type.packName.isEmpty())
-		{
-			par3List.add(type.packName);
-		}
 		if(type.category == 9)
 		{
 			par3List.add("Fuel Stored: " + (type.fuel - par1ItemStack.getItemDamage()) + " / " + type.fuel);

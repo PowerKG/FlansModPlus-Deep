@@ -1,21 +1,12 @@
 package com.flansmod.client;
 
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiChat;
-import net.minecraft.client.settings.KeyBinding;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-
 import org.lwjgl.input.Keyboard;
 
 import com.flansmod.api.IControllable;
+import com.flansmod.client.gui.GuiModOptions;
 import com.flansmod.client.gui.GuiTeamScores;
 import com.flansmod.client.gui.GuiTeamSelect;
 import com.flansmod.common.FlansMod;
-import com.flansmod.common.driveables.DriveableType;
-import com.flansmod.common.network.PacketGiveItem;
 import com.flansmod.common.network.PacketGunMode;
 import com.flansmod.common.network.PacketReload;
 import com.flansmod.common.network.PacketRequestDebug;
@@ -26,6 +17,11 @@ import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import cpw.mods.fml.common.gameevent.InputEvent.KeyInputEvent;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiChat;
+import net.minecraft.client.settings.KeyBinding;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.player.EntityPlayer;
 
 @SideOnly(value = Side.CLIENT)
 public class KeyInputHandler
@@ -56,6 +52,7 @@ public class KeyInputHandler
     public static KeyBinding reloadModelsKey = new KeyBinding("Reload Models Key", Keyboard.KEY_F9, "Flan's Mod");
 	public static KeyBinding secondaryKey = new KeyBinding("Select Gun Underbarrel", Keyboard.KEY_K, "Flan's Mod");
     //public static KeyBinding zoomKey = new KeyBinding("Zoom Key", 2 - 100, "Flan's Mod");
+    public static KeyBinding optionsKey = new KeyBinding("Mod Options", Keyboard.KEY_SEMICOLON, "Flan's Mod");
 
 	Minecraft mc;
 
@@ -85,8 +82,8 @@ public class KeyInputHandler
 		//ClientRegistry.registerKeyBinding(trimKey);
 		ClientRegistry.registerKeyBinding(debugKey);
 		ClientRegistry.registerKeyBinding(reloadModelsKey);
+		ClientRegistry.registerKeyBinding(optionsKey);
 		//ClientRegistry.registerKeyBinding(zoomKey);
-		//ClientRegistry.registerKeyBinding(selectorKey);
 		ClientRegistry.registerKeyBinding(secondaryKey);
 
 		mc = Minecraft.getMinecraft();
@@ -127,11 +124,6 @@ public class KeyInputHandler
 			FlansMod.getPacketHandler().sendToServer(new PacketGunMode(2));
 			return;
 		}
-		/*if(selectorKey.isPressed())
-		{
-			FlansMod.getPacketHandler().sendToServer(new PacketFireMode());
-			return;
-		}*/
 		if(debugKey.isPressed())
 		{
 			if(FlansMod.DEBUG)
@@ -146,6 +138,10 @@ public class KeyInputHandler
 			FlansModClient.reloadModels(Keyboard.isKeyDown(Keyboard.KEY_LSHIFT));
 		}
 		
+		if(optionsKey.isPressed())
+		{
+			mc.displayGuiScreen(new GuiModOptions());
+		}
 
 		//Handle driving keys
 		if(ridingEntity instanceof IControllable)

@@ -16,3 +16,5 @@ item.flagpole.name=旗杆
 tile.teamsSpawner.0.name=物品生成器
 tile.teamsSpawner.1.name=士兵生成器
 tile.teamsSpawner.2.name=载具生成器
+
+info.damage=伤害

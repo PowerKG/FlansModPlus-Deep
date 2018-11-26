@@ -59,7 +59,7 @@ public class DriveableType extends PaintableType
 	public boolean dropHarvest = false;
 	public Vector3f harvestBoxSize = new Vector3f(0,0,0);
 	public Vector3f harvestBoxPos = new Vector3f(0,0,0);
-
+	public int reloadSoundTick = 15214541;
 	public float fallDamageFactor = 1.0F;
 
 	//Weapon variables
@@ -72,7 +72,7 @@ public class DriveableType extends PaintableType
 	/** Firing modes for primary and secondary guns. Minigun also an option */
 	public EnumFireMode modePrimary = EnumFireMode.FULLAUTO, modeSecondary = EnumFireMode.FULLAUTO;
 	/** Sounds */
-	public String shootSoundPrimary, shootSoundSecondary;
+	public String shootSoundPrimary, shootSoundSecondary, shootReloadSound;
 	/** Positions of primary and secondary weapons */
 	public ArrayList<ShootPoint> shootPointsPrimary = new ArrayList<ShootPoint>(), shootPointsSecondary = new ArrayList<ShootPoint>();
 	/** Pilot guns also have their own seperate array so ammo handling can be done */
@@ -94,6 +94,8 @@ public class DriveableType extends PaintableType
 	/** Automatic counter used to setup ammo inventory for gunners */
 	public int numPassengerGunners = 0;
 
+	public float vehicleGunModelScale = 1f;
+	
 	public class ShootParticle
 	{
 		public ShootParticle(String s, float x1, float y1, float z1)
@@ -126,6 +128,7 @@ public class DriveableType extends PaintableType
 	//Movement variables
 	/** Generic movement modifiers, no longer repeated for plane and vehicle */
 	public float maxThrottle = 1F, maxNegativeThrottle = 0F;
+	public float ClutchBrake = 0F;
 	/** The origin of the tank turret */
 	public Vector3f turretOrigin = new Vector3f();
 	public Vector3f turretOriginOffset = new Vector3f();
@@ -305,10 +308,14 @@ public class DriveableType extends PaintableType
 	{
 		super.read(split, file);
 		try
-		{
+		{ 
+			if(split[0].equals("VehicleGunModelScale"))
+			     vehicleGunModelScale = Float.parseFloat(split[1]);
+			
 			if(FMLCommonHandler.instance().getSide().isClient() && split[0].equals("Model"))
 				model = FlansMod.proxy.loadModel(split[1], shortName, ModelDriveable.class);
-
+		    else if(split[0].equals("VehicleGunReloadTick"))
+                reloadSoundTick = Integer.parseInt(split[1]);
 			else if(split[0].equals("Texture"))
 				texture = split[1];
 
@@ -323,6 +330,8 @@ public class DriveableType extends PaintableType
 				maxThrottle = Float.parseFloat(split[1]);
 			else if(split[0].equals("MaxNegativeThrottle"))
 				maxNegativeThrottle = Float.parseFloat(split[1]);
+			else if(split[0].equals("ClutchBrake"))
+				ClutchBrake = Float.parseFloat(split[1]);
 			else if(split[0].equals("MaxThrottleInWater"))
 				maxThrottleInWater = Float.parseFloat(split[1]);
 			else if(split[0].equals("MaxDepth"))
@@ -830,10 +839,14 @@ public class DriveableType extends PaintableType
             }
 			else if(split[0].equals("ShootMainSound") || split[0].equals("ShootSoundPrimary") || split[0].equals("ShellSound") || split[0].equals("BombSound"))
 			{
-				
 				shootSoundPrimary = split[1];
 				FlansMod.proxy.loadSound(contentPack, "driveables", split[1]);
 			}
+            else if(split[0].equals("ShootReloadSound"))
+            {
+                shootReloadSound = split[1];
+                FlansMod.proxy.loadSound(contentPack, "driveables", split[1]);
+            }
 			else if(split[0].equals("ShootSecondarySound") || split[0].equals("ShootSoundSecondary"))
 			{
 				shootSoundSecondary = split[1];

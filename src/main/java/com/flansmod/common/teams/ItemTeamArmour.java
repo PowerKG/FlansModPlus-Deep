@@ -75,10 +75,6 @@ public class ItemTeamArmour extends ItemArmor implements ISpecialArmor, IFlanIte
 	@Override
 	public void addInformation(ItemStack stack, EntityPlayer player, List lines, boolean b)
 	{
-		if(!type.packName.isEmpty())
-		{
-			lines.add(type.packName);
-		}
 		if(type.description != null)
 		{
             Collections.addAll(lines, type.description.split("_"));
