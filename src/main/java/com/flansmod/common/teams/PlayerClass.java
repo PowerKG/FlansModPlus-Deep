@@ -168,11 +168,6 @@ public class PlayerClass extends InfoType
 				    			case stock : tagName = "stock"; break;
 				    			case grip : tagName = "grip"; break;
 				    			case generic : tagName = "generic_" + genericID++; break;
-				    			// TODO: Implement new attachments to classes
-							    case accessory: break;
-							    case gadget: break;
-							    case pump: break;
-							    case slide: break;
 				    		}
 				    		NBTTagCompound specificAttachmentTags = new NBTTagCompound();
 				    		new ItemStack(attachment.item).writeToNBT(specificAttachmentTags);

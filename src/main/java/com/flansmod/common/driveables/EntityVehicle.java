@@ -81,7 +81,6 @@ public class EntityVehicle extends EntityDriveable implements IExplodeable
     public float yawSpeed = 0;
     
     //Handling stuff
-    public int keyHeld = 0;
     public boolean leftTurnHeld = false;
     public boolean rightTurnHeld = false;
     public boolean allWheelsOnGround;
@@ -283,20 +282,14 @@ public class EntityVehicle extends EntityDriveable implements IExplodeable
 			}
 			case 2 : //Left : Yaw the wheels left
 			{
-				if(throttle < 0.3F)
-					throttle += type.ClutchBrake;
 				wheelsYaw -= 1F;
 				leftTurnHeld = true;
-				keyHeld = 100;
 				return true;
 			}
 			case 3 : //Right : Yaw the wheels right
 			{
-				if(throttle < 0.3F)
-					throttle += type.ClutchBrake;
 				wheelsYaw += 1F;
-				rightTurnHeld = true;
-				keyHeld = 100;
+				leftTurnHeld = true;
 				return true;
 			}
 			case 4 : //Up : Brake
@@ -527,7 +520,7 @@ public class EntityVehicle extends EntityDriveable implements IExplodeable
 		//Rotate the wheels
 		if(hasEnoughFuel())
 		{
-			wheelsAngle += throttle / 3.25F;
+			wheelsAngle += throttle / 7F;
 		}
 		
 		prevDoorPos = doorPos;
@@ -709,7 +702,7 @@ public class EntityVehicle extends EntityDriveable implements IExplodeable
 				wheel.moveEntity(0F, (!onDeck)?-0.98F:0, 0F);	
 			}
 			
-			if((throttle >= 1.1 || throttle <= -1.1)){
+			if((throttle >= 0.3 || throttle <= -0.3)){
 				Vector3f motionVec = new Vector3f(0,0,0);
 				Vector3f targetVec = type.wheelPositions[wheel.ID].position;
 				targetVec = axes.findLocalVectorGlobally(targetVec);
@@ -949,15 +942,6 @@ public class EntityVehicle extends EntityDriveable implements IExplodeable
 		} if(animFrameRight < 0){
 			animFrameRight = type.animFrames;
 		}
-		
-		
-		if(throttle > 0)
-		{
-			throttle -= 0.0035;
-		}
-		else if(throttle < 0)
-			throttle += 0.0035;
-		
 		
 		//if(seats[0].riddenByEntity == null) throttle = 1F;
 		
@@ -1326,7 +1310,7 @@ public class EntityVehicle extends EntityDriveable implements IExplodeable
 
 		if(damagesource.damageType.equals("player") && damagesource.getEntity().onGround && (seats[0] == null || seats[0].riddenByEntity == null) && !locked)
 		{
-			ItemStack vehicleStack = new ItemStack(type.item, 1, driveableData.paintjobID);
+			ItemStack vehicleStack = new ItemStack(type.item, 1, 0);
 			vehicleStack.stackTagCompound = new NBTTagCompound();
 			driveableData.writeToNBT(vehicleStack.stackTagCompound);
 			entityDropItem(vehicleStack, 0.5F);

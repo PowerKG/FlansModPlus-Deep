@@ -670,7 +670,7 @@ public class EntitySeat extends Entity implements IControllable, IEntityAddition
 	
 			if(gun != null && gun.mode != EnumFireMode.MINIGUN || minigunSpeed > 2F)
 			{
-				if(gunDelay <= 0 && TeamsManager.bulletsEnabled && driveable.getDriveableData().ammo.length > 0)
+				if(gunDelay <= 0 && TeamsManager.bulletsEnabled)
 				{
 	
 					ItemStack bulletItemStack = driveable.getDriveableData().ammo[seatInfo.gunnerID];
@@ -779,21 +779,10 @@ public class EntitySeat extends Entity implements IControllable, IEntityAddition
 		return isDead;
 	}
 
-	public boolean exists = true;
-	
 	@Override
 	public void setDead()
 	{
-		if (worldObj.isRemote) {
-			if (exists) {
-				// Print.spam(1, "Received 'setDead()' call, but ignoring it since it wasn't
-				// sent from the server.");
-			} else {
-				super.setDead();
-			}
-		} else {
-			super.setDead();
-		}
+		super.setDead();
 	}
 
 	/**

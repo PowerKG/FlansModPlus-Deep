@@ -4,6 +4,7 @@ import io.netty.buffer.ByteBuf;
 
 import java.util.List;
 
+import mapwriter.forge.MwForge;
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.client.Minecraft;
@@ -456,6 +457,44 @@ public class EntityGrenade extends EntityShootable implements IEntityAdditionalS
 				this.setPosition(stickedEntity.posX, stickedEntity.posY, stickedEntity.posZ);
 				if(stickedEntity.isDead)
 					this.setDead();
+			}
+		}
+
+		if( thrower != null &&
+			type.motionSensor &&
+			ticksExisted%5==0 &&
+			motionTime == 0 &&
+			(!worldObj.isRemote || FlansMod.proxy.isThePlayer((EntityPlayer) thrower) || FlansMod.proxy.isOnSameTeamClientPlayer(thrower)))
+		{
+			MwForge.proxy.addEntityMarker(this, 100000);
+			
+			float checkRadius = type.motionSensorRange;
+			List list = worldObj.getEntitiesWithinAABBExcludingEntity(this, boundingBox.expand(checkRadius, checkRadius, checkRadius));
+			Entity entity;
+			for(Object obj : list)
+			{
+				if(obj instanceof Entity && obj != thrower && obj != this && !(obj instanceof EntityBullet))// && !(obj instanceof EntityGrenade))
+				{
+					entity = (Entity)obj;
+					if(entity.motionX !=0 || entity.motionY > 0 || entity.motionZ !=0 ||
+						Math.abs(entity.posX-entity.prevPosX) + Math.abs(entity.posY-entity.prevPosY) + Math.abs(entity.posZ-entity.prevPosZ) > 0.05)
+					{
+						if(!this.worldObj.isRemote)
+						{
+							PacketPlaySound.sendSoundPacket(posX, posY, posZ, type.motionSoundRange, dimension, type.motionSound, true);
+							motionTime = type.motionTime;
+							break;
+						}
+						else
+						{
+							if(entity instanceof EntityPlayer && !FlansMod.proxy.isThePlayer((EntityPlayer)entity))
+							{
+								MwForge.proxy.addEntityMarker(entity, 160);
+								motionTime = type.motionTime;
+							}
+						}
+					}
+				}
 			}
 		}
 

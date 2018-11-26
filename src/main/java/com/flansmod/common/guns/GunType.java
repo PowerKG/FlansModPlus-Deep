@@ -74,15 +74,12 @@ public class GunType extends PaintableType implements IScope
 	public boolean canShootUnderwater = true;
 	/** The amount of knockback to impact upon the player per shot */
 	public float knockback = 0F;
-	/** The secondary function of this gun. By default, the left mouse button triggers this */
-	public EnumSecondaryFunction secondaryFunction = EnumSecondaryFunction.ADS_ZOOM;
-	public EnumSecondaryFunction secondaryFunctionWhenShoot = null;
 	/** If true, then this gun can be dual wielded */
 	public boolean oneHanded = false;
 	/** For one shot items like a panzerfaust */
 	public boolean consumeGunUponUse = false;
 	/** Show the crosshair when holding this weapon */
-	public boolean showCrosshair = false;
+	public boolean showCrosshair = true;
 	/** Item to drop on shooting */
 	public String dropItemOnShoot = null;
 	//Custom Melee Stuff
@@ -100,19 +97,12 @@ public class GunType extends PaintableType implements IScope
 	public int lockOnSoundTime = 0;
 	public String lockOnSound = "";
 	public int maxRangeLockOn = 80;
-
 	public boolean canSetPosition = false;
-
 	public boolean lockOnToPlanes = false, lockOnToVehicles = false, lockOnToMechas = false, lockOnToPlayers = false, lockOnToLivings = false;
 
 	//Information
 	//Show any variables into the GUI when hovering over items.
-	/** If false, then attachments wil not be listed in item GUI */
-	public boolean showAttachments = true;
-	/** Show statistics */
-	public boolean showDamage = false, showRecoil = false, showSpread = false;
-	/** Show reload time in seconds */
-	public boolean showReloadTime = false;
+
 
 	//Shields
 	//A shield is actually a gun without any shoot functionality (similar to knives or binoculars)
@@ -128,9 +118,7 @@ public class GunType extends PaintableType implements IScope
 	/** The sound played upon shooting */
 	public String shootSound;
 	/** The sound to play upon shooting on last round */
-    public String lastShootSound;
-	/** The sound played upon shooting with a suppressor */
-	public String suppressedShootSound;
+	public String lastShootSound;
 	/** The length of the sound for looping sounds */
 	public int shootSoundLength;
 	/** Whether to distort the sound or not. Generally only set to false for looping sounds */
@@ -139,7 +127,6 @@ public class GunType extends PaintableType implements IScope
 	public String reloadSound;
 	/** The sound to play upon reloading when empty */
 	public String reloadSoundOnEmpty;
-	public String clickSoundOnEmpty;
 	public int idleSoundRange = 50;
 	public int meleeSoundRange = 50;
 	public int reloadSoundRange = 50;
@@ -156,8 +143,6 @@ public class GunType extends PaintableType implements IScope
 	public int loopedSoundLength = 20;
 	/** Played when the player stops holding shoot */
 	public String cooldownSound;
-
-
 	/** The sound to play upon weapon swing */
 	public String meleeSound;
 	/** The sound to play while holding the weapon in the hand*/
@@ -220,7 +205,12 @@ public class GunType extends PaintableType implements IScope
 	/** Gives knockback resistance to the player */
 	public float knockbackModifier = 0F;
 
-	/** Default spread of the gun. Do not modify. */
+	//Secondary Functions
+	/** The secondary function of this gun. By default, the left mouse button triggers this */
+	public EnumSecondaryFunction secondaryFunction = EnumSecondaryFunction.ADS_ZOOM;
+	public EnumSecondaryFunction secondaryFunctionWhenShoot = null;
+
+	/** Default spreads of the gun. Do not modify. */
 	private float defaultSpread = 0F;
 
 	public GunType(TypeFile file)
@@ -298,7 +288,10 @@ public class GunType extends PaintableType implements IScope
 			else if(split[0].equals("LockOnToPlayers"))
 				lockOnToPlayers = Boolean.parseBoolean(split[1].toLowerCase());
 			else if(split[0].equals("LockOnToLivings"))
-				lockOnToLivings = Boolean.parseBoolean(split[1].toLowerCase());	
+				lockOnToLivings = Boolean.parseBoolean(split[1].toLowerCase());
+
+			else if(split[0].equals("showCrosshair"))
+			    showCrosshair = Boolean.parseBoolean(split[1]);			
 			
 			else if(split[0].equals("ConsumeGunOnUse"))
 				consumeGunUponUse = Boolean.parseBoolean(split[1]);
@@ -315,19 +308,7 @@ public class GunType extends PaintableType implements IScope
 				maxRangeLockOn = Integer.parseInt(split[1]);
 
 
-			//Information
-			else if(split[0].equals("ShowAttachments"))
-				showAttachments = Boolean.parseBoolean(split[1]);
-			else if(split[0].equals("ShowDamage"))
-				showDamage = Boolean.parseBoolean(split[1]);
-			else if(split[0].equals("ShowRecoil"))
-				showRecoil = Boolean.parseBoolean(split[1]);
-			else if(split[0].equals("ShowAccuracy"))
-				showSpread = Boolean.parseBoolean(split[1]);
-			else if(split[0].equals("ShowReloadTime"))
-				showReloadTime = Boolean.parseBoolean(split[1]);
 
-			//Sounds
 			else if(split[0].equals("ShootDelay"))
 				shootDelay = Integer.parseInt(split[1]);
 			else if(split[0].equals("SoundLength"))
@@ -352,11 +333,6 @@ public class GunType extends PaintableType implements IScope
 				lastShootSound = split[1];
 				FlansMod.proxy.loadSound(contentPack, "guns", split[1]);
 			}
-			else if(split[0].equals("SuppressedShootSound"))
-			{
-				suppressedShootSound = split[1];
-				FlansMod.proxy.loadSound(contentPack, "guns", split[1]);
-			}
 			else if(split[0].equals("ReloadSound"))
 			{
 				reloadSound = split[1];
@@ -365,11 +341,6 @@ public class GunType extends PaintableType implements IScope
 			else if(split[0].equals("EmptyReloadSound"))
 			{
 				reloadSoundOnEmpty = split[1];
-				FlansMod.proxy.loadSound(contentPack, "guns", split[1]);
-			}
-			else if(split[0].equals("EmptyClickSound"))
-			{
-				clickSoundOnEmpty = split[1];
 				FlansMod.proxy.loadSound(contentPack, "guns", split[1]);
 			}
 			else if(split[0].equals("IdleSound"))

@@ -507,11 +507,7 @@ public class GuiPaintjobTable extends GuiContainer
 	            		
 	            		Paintjob paintjob = paintableType.paintjobs.get(9 * j + i);
 	            		ItemStack stack = gunStack.copy();
-                        try {
-	            		 stack.getTagCompound().setString("Paint", paintjob.iconName);
-                        } catch (NullPointerException e) {
-                            //
-                        }
+	            		stack.getTagCompound().setString("Paint", paintjob.iconName);
 	            		int slotX = 7 + i * 18;
 	            		int slotY = 129 + j * 18;
 	            		if(mouseXInGUI >= slotX && mouseXInGUI < slotX + 18 && mouseYInGUI >= slotY && mouseYInGUI < slotY + 18)

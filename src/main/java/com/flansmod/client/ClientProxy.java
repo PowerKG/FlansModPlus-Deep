@@ -7,7 +7,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.Callable;
 
-import com.flansmod.common.types.InfoType;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 
@@ -286,7 +285,7 @@ public class ClientProxy extends CommonProxy
 		case 0: return new GuiDriveableCrafting(player.inventory, world, x, y, z);
 		case 1: return new GuiDriveableRepair(player);
 		case 2: return new GuiGunModTable(player.inventory, world);
-		case 5: return new GuiGunBox(player.inventory, ((BlockGunBox)world.getBlock(x, y, z)).type, world);
+		case 5: return new GuiGunBox(player.inventory, ((BlockGunBox)world.getBlock(x, y, z)).type);
 		case 6: return new GuiDriveableInventory(player.inventory, world, ((EntitySeat)player.ridingEntity).driveable, 0);
 		case 7: return new GuiDriveableInventory(player.inventory, world, ((EntitySeat)player.ridingEntity).driveable, 1);
 		case 8: return new GuiDriveableFuel		(player.inventory, world, ((EntitySeat)player.ridingEntity).driveable);
@@ -379,9 +378,16 @@ public class ClientProxy extends CommonProxy
 	
 	/* Gun and armour box crafting methods */
 	@Override
-	public void buyGun(GunBoxType type, InfoType gun)
+	public void buyGun(GunBoxType type, int gun)
 	{
-		FlansMod.getPacketHandler().sendToServer(new PacketBuyWeapon(type, gun));
+		FlansMod.getPacketHandler().sendToServer(new PacketBuyWeapon(type, 0, gun));
+		FlansModClient.shootTimeLeft = FlansModClient.shootTimeRight = 10;
+	}
+
+	@Override
+	public void buyAmmo(GunBoxType box, int ammo, int type)
+	{
+		FlansMod.getPacketHandler().sendToServer(new PacketBuyWeapon(box, type, ammo));
 		FlansModClient.shootTimeLeft = FlansModClient.shootTimeRight = 10;
 	}
 	
@@ -557,22 +563,6 @@ public class ClientProxy extends CommonProxy
 					{
 						entityfx = new EntityFMFlame(theWorld, p_72726_2_, p_72726_4_, p_72726_6_, p_72726_8_, p_72726_10_, p_72726_12_);
 					}
-					
-					if (p_72726_1_.equals("flansmod.fmtracer"))
-					{
-						entityfx = new EntityFMTracer(theWorld, p_72726_2_, p_72726_4_, p_72726_6_, p_72726_8_, p_72726_10_, p_72726_12_);
-					}
-					
-					if (p_72726_1_.equals("flansmod.fmtracergreen"))
-					{
-						entityfx = new EntityFMTracerGreen(theWorld, p_72726_2_, p_72726_4_, p_72726_6_, p_72726_8_, p_72726_10_, p_72726_12_);
-					}
-					
-					if (p_72726_1_.equals("flansmod.fmtracerred"))
-					{
-						entityfx = new EntityFMTracerRed(theWorld, p_72726_2_, p_72726_4_, p_72726_6_, p_72726_8_, p_72726_10_, p_72726_12_);
-					}
-					
 					
 					if (p_72726_1_.equals("flansmod.afterburn"))
 					{

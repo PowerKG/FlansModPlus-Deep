@@ -42,18 +42,11 @@ public class FlightController {
 		case PLANE :
 		{
 			PlaneModeFly(plane);
-			break;
 		}
 		case HELI :
 		{
 			HeliModeFly(plane);
-			break;
 		}
-		
-		// TODO: Look into other flight controllers
-		case SIXDOF: break;
-		case VTOL: break;
-
 		}
 
 	}

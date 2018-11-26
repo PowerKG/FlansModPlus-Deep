@@ -10,7 +10,7 @@ public class ModelAttachment extends ModelBase
 	public ModelRendererTurbo[] ammoModel = new ModelRendererTurbo[0];
 
 	public EnumAnimationType secondaryAnimType = EnumAnimationType.NONE;
-	public float tiltGunTime = 0.15F, unloadClipTime = 0.35F, loadClipTime = 0.35F, untiltGunTime = 0.15F;
+	public float tiltGunTime = 0.25F, unloadClipTime = 0.25F, loadClipTime = 0.25F, untiltGunTime = 0.25F;
 	/** For rifles and shotguns. Currently a generic reload animation regardless of how full the internal magazine already is */
 	public float numBulletsInReloadAnimation = 1;
 	/** For end loaded projectiles */
