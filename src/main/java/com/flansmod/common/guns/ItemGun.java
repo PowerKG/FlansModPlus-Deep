@@ -100,6 +100,62 @@ public class ItemGun extends Item implements IPaintableItem {
 	public int impactY = 0;
 	public int impactZ = 0;
 
+	// 耐久度
+
+	@Override
+	public boolean isDamaged(ItemStack stack) {
+		return true;
+	}
+
+	@Override
+	public int getDisplayDamage(ItemStack stack) {
+
+		NBTTagCompound tag = stack.getTagCompound();
+		if (tag != null) {
+			if (tag.hasKey("shot")) {
+				return tag.getInteger("shot");
+			}
+		}
+		return 0;
+	}
+
+	@Override
+	public int getMaxDamage(ItemStack stack) {
+		if (!stack.hasTagCompound() || !stack.getTagCompound().hasKey("shot"))
+			return -1;
+		else
+			return 50;
+	}
+
+	public boolean isOvershot(ItemStack stack) {
+		// TODO 阻止挥动武器
+		if (stack.hasTagCompound() && stack.getTagCompound().hasKey("shot")) {
+			int db = stack.getMaxDamage() - ((stack.stackTagCompound != null && stack.getTagCompound().hasKey("shot"))
+					? stack.getTagCompound().getInteger("shot")
+					: 0);
+			if (db == 0)
+				return true;
+		}
+		return false;
+	}
+
+	public void addShotTimes(ItemStack stack, int amount) {
+
+		NBTTagCompound tag = stack.getTagCompound();
+		if (tag != null) {
+
+			int shot = (tag.hasKey("shot") ? tag.getInteger("shot") : 0);
+
+			int newShot = shot + amount;
+			if (newShot > stack.getMaxDamage())
+				newShot = stack.getMaxDamage();
+
+			tag.setInteger("shot", newShot);
+			stack.setTagCompound(tag);
+		}
+	}
+
+	// 原版
 	@Override
 	public InfoType getInfoType() {
 		return type;
@@ -211,23 +267,48 @@ public class ItemGun extends Item implements IPaintableItem {
 //		}
 
 		// Reveal all the gun stats when holding down the sneak key
+
+		if (stack.stackTagCompound != null && stack.getTagCompound().hasKey("shot")) {
+			int db = ((stack.stackTagCompound != null && stack.getTagCompound().hasKey("shot"))
+					? stack.getTagCompound().getInteger("shot")
+					: 0);
+			lines.add("§a[耐久:" + (stack.getMaxDamage() - db) + "/" + stack.getMaxDamage() + "]");
+
+		}
 		if (!GameSettings.isKeyDown(shift)) {
 			// Show loaded ammo
 			for (int i = 0; i < type.getNumAmmoItemsInGun(stack); i++) {
 				ItemStack bulletStack = getBulletItemStack(stack, i);
 				if (bulletStack != null && bulletStack.getItem() instanceof ItemBullet) {
 					BulletType bulletType = ((ItemBullet) bulletStack.getItem()).type;
-					String line = I18n.format(bulletType.name) + " "
+					String line = I18n.format("item." + bulletType.shortName + ".name") + " "
 							+ (bulletStack.getMaxDamage() - bulletStack.getItemDamage()) + "/"
 							+ bulletStack.getMaxDamage();
 					lines.add(line);
 				}
 			}
+//			lines.add("Hold \u00a7b\u00a7o" + GameSettings.getKeyDisplayString(shift.getKeyCode())
+//					+ "\u00a7r\u00a77 for details");
+			boolean empty = type.getCurrentAttachments(stack).isEmpty();
+			if (!empty) {
+				lines.add("");
+				lines.add("\u00a7e" + I18n.format("info.attachments"));
+				for (AttachmentType attachment : type.getCurrentAttachments(stack)) {
+					String line = attachment.name;
+					lines.add(line);
+					if (line != null)
+						empty = false;
+				}
 
-			lines.add("Hold \u00a7b\u00a7o" + GameSettings.getKeyDisplayString(shift.getKeyCode())
-					+ "\u00a7r\u00a77 for details");
-		} else {
+				if (empty)
+					lines.add("- " + I18n.format("info.null"));
+			}
+
 			lines.add("");
+			lines.add(I18n.format("hint.infos").replace("$key$", GameSettings.getKeyDisplayString(shift.getKeyCode())));
+
+		} else {
+			lines.add(I18n.format("infos"));
 
 			AttachmentType barrel = type.getBarrel(stack);
 			if (barrel != null && barrel.silencer)
@@ -236,24 +317,35 @@ public class ItemGun extends Item implements IPaintableItem {
 			if (type.getSecondaryFire(stack))
 				lines.add("\u00a7e[Underbarrel]");
 
-			lines.add("\u00a79" + I18n.format("info.damage") + "\u00a77: " + roundFloat(type.getDamage(stack), 2));
-			lines.add("\u00a79Recoil" + "\u00a77: " + roundFloat(type.getRecoilPitch(stack), 2));
-			lines.add("\u00a79Accuracy" + "\u00a77: " + roundFloat(type.getSpread(stack), 2));
-			lines.add("\u00a79Reload Time" + "\u00a77: " + roundFloat(type.getReloadTime(stack) / 20, 2) + "s");
-			lines.add("\u00a79Mode" + "\u00a77: \u00a7f" + type.getFireMode(stack).toString().toLowerCase());
+			float damage = roundFloat(type.getDamage(stack), 2);
+			if (damage != 0)
+				lines.add("\u00a79" + I18n.format("info.damage") + "\u00a77: " + damage);
+//			lines.add("\u00a79Recoil" + "\u00a77: " + roundFloat(type.getRecoilPitch(stack), 2));
+//			lines.add("\u00a79Accuracy" + "\u00a77: " + roundFloat(type.getSpread(stack), 2));
 
-			lines.add("");
-			lines.add("\u00a7eAttachments");
-			boolean empty = true;
-			for (AttachmentType attachment : type.getCurrentAttachments(stack)) {
-				String line = attachment.name;
-				lines.add(line);
-				if (line != null)
-					empty = false;
+			float reload = roundFloat(type.getReloadTime(stack) / 20, 2);
+			if (reload != 0)
+				lines.add("\u00a79" + I18n.format("info.reload") + "\u00a77: " + reload + "s");
+//			lines.add("\u00a79Mode" + "\u00a77: \u00a7f" + type.getFireMode(stack).toString().toLowerCase());
+
+			if (damage == 0) {
+				float melee = roundFloat(type.getMeleeDamage(stack), 2);
+				if (melee != 0)
+					lines.add("\u00a79" + I18n.format("info.melee") + "\u00a77: " + melee);
+
+				float meleeTime = roundFloat((float) type.meleeTime / 20, 2);
+				if (meleeTime != 0)
+					lines.add("\u00a79" + I18n.format("info.meleeTime") + "\u00a77: " + meleeTime + "s");
 			}
 
-			if (empty)
-				lines.add("None");
+			if (!type.ammo.isEmpty()) {
+				lines.add("");
+				lines.add(I18n.format("info.suitammo"));
+				for (ShootableType st : type.ammo) {
+					lines.add("- " + I18n.format("item." + st.shortName + ".name"));
+				}
+			}
+
 		}
 	}
 
@@ -494,6 +586,14 @@ public class ItemGun extends Item implements IPaintableItem {
 	public boolean clientSideShoot(EntityPlayer player, ItemStack stack, GunType gunType, boolean left) {
 		PlayerData data = PlayerHandler.getPlayerData(player);
 
+		if (stack.hasTagCompound() && stack.getTagCompound().hasKey("shot")) {
+			int db = stack.getMaxDamage() - ((stack.stackTagCompound != null && stack.getTagCompound().hasKey("shot"))
+					? stack.getTagCompound().getInteger("shot")
+					: 0);
+			if (db == 0)
+				return false;
+		}
+
 		if (type.meleeSound != null)
 			PacketPlaySound.sendSoundPacket(player.posX, player.posY, player.posZ, type.meleeSoundRange,
 					player.dimension, type.meleeSound, true);
@@ -587,6 +687,7 @@ public class ItemGun extends Item implements IPaintableItem {
 
 	public void onUpdateServer(ItemStack itemstack, World world, Entity entity, int i, boolean flag) {
 		if (itemstack.getTagCompound() == null) {
+			// TODO 生成默认NBT
 			GunType gunType = this.type;
 			NBTTagCompound tags = new NBTTagCompound();
 			tags.setString("Paint", gunType.defaultPaintjob.iconName);
@@ -595,6 +696,7 @@ public class ItemGun extends Item implements IPaintableItem {
 				ammoTagsList.appendTag(new NBTTagCompound());
 			}
 			tags.setTag("ammo", ammoTagsList);
+			tags.setInteger("shot", 0);
 			itemstack.stackTagCompound = tags;
 		}
 
@@ -837,6 +939,10 @@ public class ItemGun extends Item implements IPaintableItem {
 			// }
 			// Melee weapon
 			if (data.meleeLength > 0 && type.meleePath.size() > 0 && player.inventory.getCurrentItem() == itemstack) {
+
+				if (isOvershot(itemstack))
+					return;
+
 				for (int k = 0; k < type.meleeDamagePoints.size(); k++) {
 					Vector3f meleeDamagePoint = type.meleeDamagePoints.get(k);
 					// Do a raytrace from the prev pos to the current pos and attack anything in the
@@ -973,7 +1079,12 @@ public class ItemGun extends Item implements IPaintableItem {
 
 							float swingDistance = dPos.length();
 
+							// TODO完成射击
+
+							addShotTimes(itemstack, hits.size() * 10);
+
 							for (BulletHit bulletHit : hits) {
+
 								if (bulletHit instanceof PlayerBulletHit) {
 									PlayerBulletHit playerHit = (PlayerBulletHit) bulletHit;
 									float damageMultiplier = 1F;
@@ -1097,6 +1208,10 @@ public class ItemGun extends Item implements IPaintableItem {
 
 	public ItemStack tryToShoot(ItemStack gunStack, GunType gunType, World world, EntityPlayerMP entityplayer,
 			boolean left) {
+
+		if (isOvershot(gunStack))
+			return gunStack;
+
 		if (type.deployable)
 			return gunStack;
 		PlayerData data = PlayerHandler.getPlayerData(entityplayer);
@@ -1330,6 +1445,7 @@ public class ItemGun extends Item implements IPaintableItem {
 			soundDelay = gunType.shootSoundLength;
 		}
 		if (!world.isRemote && bulletStack.getItem() instanceof ItemShootable) {
+
 			// TODO 服务端射击
 			// Spawn the bullet entities
 			ItemShootable itemShootable = (ItemShootable) bulletStack.getItem();
@@ -1373,6 +1489,9 @@ public class ItemGun extends Item implements IPaintableItem {
 			FlansModDeep.event_bus.post(fireEvent);
 			if (fireEvent.isCanceled())
 				return;
+
+			// TODO完成射击
+			addShotTimes(stack, 1);
 
 			spread = fireEvent.getSpread();
 			numBullets = fireEvent.getNumBullets();
