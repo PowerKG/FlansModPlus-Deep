@@ -21,12 +21,14 @@ tile.teamsSpawner.2.name=载具生成器
 hint.infos=§7<按下§b$key$§7显示详细数据>
 
 infos=§c[详细详细]
+info.durability=耐久
 info.damage=伤害
 info.recoil=后座力
 info.accuracy=精准
 info.reload=装弹
 info.melee=近战
 info.meleeTime=攻速
+info.quality=品质
 
 info.suitammo=§c[适配弹药]
 

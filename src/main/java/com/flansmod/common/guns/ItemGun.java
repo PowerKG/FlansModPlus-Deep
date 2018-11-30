@@ -74,6 +74,7 @@ import com.flansmod.common.teams.Team;
 import com.flansmod.common.types.InfoType;
 import com.flansmod.common.vector.Vector3f;
 import com.google.common.collect.Multimap;
+import com.mojang.realmsclient.gui.ChatFormatting;
 
 import cpw.mods.fml.client.FMLClientHandler;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
@@ -83,6 +84,8 @@ import cpw.mods.fml.relauncher.SideOnly;
 import me.kg.flansmod.deep.FlansModDeep;
 import me.kg.flansmod.deep.events.GunFireEvent;
 import me.kg.flansmod.deep.events.GunTryFireEvent;
+import me.kg.flansmod.deep.quality.GunQuality;
+import me.kg.flansmod.deep.quality.QualityManager;
 
 public class ItemGun extends Item implements IPaintableItem {
 	public GunType type;
@@ -124,11 +127,10 @@ public class ItemGun extends Item implements IPaintableItem {
 		if (!stack.hasTagCompound() || !stack.getTagCompound().hasKey("shot"))
 			return -1;
 		else
-			return 50;
+			return 500;
 	}
 
 	public boolean isOvershot(ItemStack stack) {
-		// TODO 阻止挥动武器
 		if (stack.hasTagCompound() && stack.getTagCompound().hasKey("shot")) {
 			int db = stack.getMaxDamage() - ((stack.stackTagCompound != null && stack.getTagCompound().hasKey("shot"))
 					? stack.getTagCompound().getInteger("shot")
@@ -153,6 +155,16 @@ public class ItemGun extends Item implements IPaintableItem {
 			tag.setInteger("shot", newShot);
 			stack.setTagCompound(tag);
 		}
+	}
+
+	// 品质
+	public GunQuality getGunQuality(ItemStack stack) {
+		NBTTagCompound tag = stack.getTagCompound();
+		if (tag != null && tag.hasKey("quality")) {
+			String quality = tag.getString("quality");
+			return QualityManager.findQuality(quality);
+		}
+		return null;
 	}
 
 	// 原版
@@ -267,15 +279,28 @@ public class ItemGun extends Item implements IPaintableItem {
 //		}
 
 		// Reveal all the gun stats when holding down the sneak key
+		GunQuality quality = getGunQuality(stack);
 
-		if (stack.stackTagCompound != null && stack.getTagCompound().hasKey("shot")) {
-			int db = ((stack.stackTagCompound != null && stack.getTagCompound().hasKey("shot"))
-					? stack.getTagCompound().getInteger("shot")
-					: 0);
-			lines.add("§a[耐久:" + (stack.getMaxDamage() - db) + "/" + stack.getMaxDamage() + "]");
-
-		}
 		if (!GameSettings.isKeyDown(shift)) {
+
+			boolean nextLine = false;
+
+			if (quality != null) {
+				lines.add(ChatFormatting.GRAY + "[" + quality.name + ChatFormatting.GRAY + "]");
+				nextLine = true;
+			}
+			if (stack.stackTagCompound != null && stack.getTagCompound().hasKey("shot")) {
+				int db = ((stack.stackTagCompound != null && stack.getTagCompound().hasKey("shot"))
+						? stack.getTagCompound().getInteger("shot")
+						: 0);
+				lines.add(ChatFormatting.GRAY + "[" + ChatFormatting.YELLOW + I18n.format("info.durability") + ": "
+						+ (stack.getMaxDamage() - db) + "/" + stack.getMaxDamage() + ChatFormatting.GRAY + "]");
+				nextLine = true;
+			}
+
+			if (nextLine)
+				lines.add("");
+
 			// Show loaded ammo
 			for (int i = 0; i < type.getNumAmmoItemsInGun(stack); i++) {
 				ItemStack bulletStack = getBulletItemStack(stack, i);
@@ -319,23 +344,27 @@ public class ItemGun extends Item implements IPaintableItem {
 
 			float damage = roundFloat(type.getDamage(stack), 2);
 			if (damage != 0)
-				lines.add("\u00a79" + I18n.format("info.damage") + "\u00a77: " + damage);
+				lines.add(
+						"\u00a79" + I18n.format("info.damage") + "\u00a77: " + damage + GunQuality.genDamage(quality));
 //			lines.add("\u00a79Recoil" + "\u00a77: " + roundFloat(type.getRecoilPitch(stack), 2));
 //			lines.add("\u00a79Accuracy" + "\u00a77: " + roundFloat(type.getSpread(stack), 2));
 
 			float reload = roundFloat(type.getReloadTime(stack) / 20, 2);
 			if (reload != 0)
-				lines.add("\u00a79" + I18n.format("info.reload") + "\u00a77: " + reload + "s");
+				lines.add("\u00a79" + I18n.format("info.reload") + "\u00a77: " + reload + "s"
+						+ GunQuality.genReloadTime(quality));
 //			lines.add("\u00a79Mode" + "\u00a77: \u00a7f" + type.getFireMode(stack).toString().toLowerCase());
 
 			if (damage == 0) {
 				float melee = roundFloat(type.getMeleeDamage(stack), 2);
 				if (melee != 0)
-					lines.add("\u00a79" + I18n.format("info.melee") + "\u00a77: " + melee);
+					lines.add("\u00a79" + I18n.format("info.melee") + "\u00a77: " + melee
+							+ GunQuality.genMeleeDamage(quality));
 
 				float meleeTime = roundFloat((float) type.meleeTime / 20, 2);
 				if (meleeTime != 0)
-					lines.add("\u00a79" + I18n.format("info.meleeTime") + "\u00a77: " + meleeTime + "s");
+					lines.add("\u00a79" + I18n.format("info.meleeTime") + "\u00a77: " + meleeTime + "s"
+							+ GunQuality.genMeleeTime(quality));
 			}
 
 			if (!type.ammo.isEmpty()) {
@@ -1082,6 +1111,7 @@ public class ItemGun extends Item implements IPaintableItem {
 							// TODO完成射击
 
 							addShotTimes(itemstack, hits.size() * 10);
+							GunQuality quality = getGunQuality(itemstack);
 
 							for (BulletHit bulletHit : hits) {
 
@@ -1105,8 +1135,8 @@ public class ItemGun extends Item implements IPaintableItem {
 									default:
 									}
 
-									if (playerHit.hitbox.player.attackEntityFrom(getMeleeDamage(player),
-											swingDistance * type.meleeDamage)) {
+									if (playerHit.hitbox.player.attackEntityFrom(getMeleeDamage(player), swingDistance
+											* (type.meleeDamage + (quality != null ? quality.meleeDamageUp : 0)))) {
 										// If the attack was allowed, we should remove their immortality cooldown so we
 										// can shoot them again. Without this, any rapid fire gun become useless
 										playerHit.hitbox.player.arrowHitTimer++;
@@ -1123,7 +1153,8 @@ public class ItemGun extends Item implements IPaintableItem {
 								} else if (bulletHit instanceof EntityHit) {
 									EntityHit entityHit = (EntityHit) bulletHit;
 									if (entityHit.entity.attackEntityFrom(DamageSource.causePlayerDamage(player),
-											swingDistance * type.meleeDamage)
+											swingDistance * (type.meleeDamage
+													+ (quality != null ? quality.meleeDamageUp : 0)))
 											&& entityHit.entity instanceof EntityLivingBase) {
 										EntityLivingBase living = (EntityLivingBase) entityHit.entity;
 										// If the attack was allowed, we should remove their immortality cooldown so we
@@ -1210,7 +1241,7 @@ public class ItemGun extends Item implements IPaintableItem {
 			boolean left) {
 
 		if (isOvershot(gunStack))
-			return gunStack;
+			return null;
 
 		if (type.deployable)
 			return gunStack;
@@ -1241,9 +1272,13 @@ public class ItemGun extends Item implements IPaintableItem {
 						return gunStack;
 				}
 				if (reload(gunStack, gunType, world, entityplayer, false, left)) {
+
+					GunQuality quality = getGunQuality(gunStack);
+
 					// Set player shoot delay to be the reload delay
 					// Set both gun delays to avoid reloading two guns at once
-					data.shootTimeRight = data.shootTimeLeft = (int) gunType.getReloadTime(gunStack);
+					data.shootTimeRight = data.shootTimeLeft = (int) gunType.getReloadTime(gunStack)
+							+ (quality != null ? quality.reloadTimeUp : 0);
 
 					if (left) {
 						data.reloadingLeft = true;
@@ -1444,6 +1479,8 @@ public class ItemGun extends Item implements IPaintableItem {
 						type.gunSoundRange, entityplayer.dimension, soundToPlay, gunType.distortSound, silenced);
 			soundDelay = gunType.shootSoundLength;
 		}
+		GunQuality quality = getGunQuality(stack);
+
 		if (!world.isRemote && bulletStack.getItem() instanceof ItemShootable) {
 
 			// TODO 服务端射击
@@ -1498,6 +1535,13 @@ public class ItemGun extends Item implements IPaintableItem {
 			damage = fireEvent.getDamage();
 			speed = fireEvent.getSpeed();
 
+			if (quality != null) {
+				damage += quality.damageUp;
+				speed += quality.speedUp;
+				spread += quality.spreadUp;
+				numBullets += quality.numBulletsUp;
+			}
+
 			for (int k = 0; k < numBullets; k++) {
 				world.spawnEntityInWorld(itemShootable.getEntity(world, entityplayer, spread, damage, speed,
 						numBullets > 1, bulletStack.getItemDamage(), gunType));
@@ -1511,9 +1555,11 @@ public class ItemGun extends Item implements IPaintableItem {
 				dropItem(world, entityplayer, gunType.dropItemOnShoot);
 		}
 		if (left)
-			PlayerHandler.getPlayerData(entityplayer).shootTimeLeft = gunType.getShootDelay(stack);
+			PlayerHandler.getPlayerData(entityplayer).shootTimeLeft = gunType.getShootDelay(stack)
+					+ (quality != null ? quality.shootDelayUp : 0);
 		else
-			PlayerHandler.getPlayerData(entityplayer).shootTimeRight = gunType.getShootDelay(stack);
+			PlayerHandler.getPlayerData(entityplayer).shootTimeRight = gunType.getShootDelay(stack)
+					+ (quality != null ? quality.shootDelayUp : 0);
 		if (gunType.knockback > 0) {
 			// TODO : Apply knockback
 		}
@@ -1600,10 +1646,12 @@ public class ItemGun extends Item implements IPaintableItem {
 					type.meleeSoundRange, entityLiving.dimension, type.meleeSound, true);
 		// Do custom melee code here
 		if (type.secondaryFunction == EnumSecondaryFunction.CUSTOM_MELEE) {
+
+			GunQuality quality = getGunQuality(stack);
 			// Do animation
 			if (entityLiving.worldObj.isRemote) {
 				GunAnimations animations = FlansModClient.getGunAnimations(entityLiving, false);
-				animations.doMelee(type.meleeTime);
+				animations.doMelee(type.meleeTime + (quality != null ? quality.meleeTimeUp : 0));
 			}
 			// Do custom melee hit detection
 			if (entityLiving instanceof EntityPlayer) {
