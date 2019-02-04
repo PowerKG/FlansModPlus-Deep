@@ -148,14 +148,10 @@ public class ItemGun extends Item implements IPaintableItem {
 
 			int shot = (tag.hasKey("shot") ? tag.getInteger("shot") : 0);
 
-			System.out.println(shot+":"+amount);
-			
 			int newShot = shot + amount;
-			if (stack.getMaxDamage()!=-1&&newShot > stack.getMaxDamage())
+			if (stack.getMaxDamage() != -1 && newShot > stack.getMaxDamage())
 				newShot = stack.getMaxDamage();
-			
-			System.out.println(newShot);
-			
+
 			tag.setInteger("shot", newShot);
 			stack.setTagCompound(tag);
 		}
@@ -1077,29 +1073,30 @@ public class ItemGun extends Item implements IPaintableItem {
 								}
 							} else {
 								Entity entity = (Entity) obj;
-								if(data.lastMeleePositions!=null) {
-								if (entity != player && !entity.isDead
-										&& (entity instanceof EntityLivingBase || entity instanceof EntityAAGun)) {
-									MovingObjectPosition mop = entity.boundingBox.calculateIntercept(
-											data.lastMeleePositions[k].toVec3(), nextPosInWorldCoords.toVec3());
-									if (mop != null) {
-										Vector3f hitPoint = new Vector3f(
-												mop.hitVec.xCoord - data.lastMeleePositions[k].x,
-												mop.hitVec.yCoord - data.lastMeleePositions[k].y,
-												mop.hitVec.zCoord - data.lastMeleePositions[k].z);
-										float hitLambda = 1F;
-										if (dPos.x != 0F)
-											hitLambda = hitPoint.x / dPos.x;
-										else if (dPos.y != 0F)
-											hitLambda = hitPoint.y / dPos.y;
-										else if (dPos.z != 0F)
-											hitLambda = hitPoint.z / dPos.z;
-										if (hitLambda < 0)
-											hitLambda = -hitLambda;
+								if (data.lastMeleePositions != null) {
+									if (entity != player && !entity.isDead
+											&& (entity instanceof EntityLivingBase || entity instanceof EntityAAGun)) {
+										MovingObjectPosition mop = entity.boundingBox.calculateIntercept(
+												data.lastMeleePositions[k].toVec3(), nextPosInWorldCoords.toVec3());
+										if (mop != null) {
+											Vector3f hitPoint = new Vector3f(
+													mop.hitVec.xCoord - data.lastMeleePositions[k].x,
+													mop.hitVec.yCoord - data.lastMeleePositions[k].y,
+													mop.hitVec.zCoord - data.lastMeleePositions[k].z);
+											float hitLambda = 1F;
+											if (dPos.x != 0F)
+												hitLambda = hitPoint.x / dPos.x;
+											else if (dPos.y != 0F)
+												hitLambda = hitPoint.y / dPos.y;
+											else if (dPos.z != 0F)
+												hitLambda = hitPoint.z / dPos.z;
+											if (hitLambda < 0)
+												hitLambda = -hitLambda;
 
-										hits.add(new EntityHit(entity, hitLambda));
+											hits.add(new EntityHit(entity, hitLambda));
+										}
 									}
-								}}
+								}
 							}
 						}
 
