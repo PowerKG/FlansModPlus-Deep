@@ -111,6 +111,7 @@ public class TickHandlerClient
 				{
 					event.setCanceled(true);
 					return;
+
 				}
 			}
 		}
@@ -137,6 +138,7 @@ public class TickHandlerClient
 					overlayTexture = ((ItemTeamArmour)stack.getItem()).type.overlay;
 				}
 			}
+			
 
 			if(overlayTexture != null)
 			{

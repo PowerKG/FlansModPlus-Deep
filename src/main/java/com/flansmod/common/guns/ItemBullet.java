@@ -60,7 +60,7 @@ public class ItemBullet extends ItemShootable implements IFlanItem
 	{
 		if(!type.packName.isEmpty())
 		{
-			lines.add(type.packName);
+//			lines.add(type.packName);
 		}
 		if(type.description != null)
 		{

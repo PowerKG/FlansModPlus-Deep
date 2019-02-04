@@ -6,5 +6,9 @@
   "defaultshellinsert": {
     "category": "player",
     "sounds": ["flansmod:defaultshellinsert"]
+  },
+  "ting": {
+    "category" : "player",
+    "sounds" : [ "flansmod:ting" ]
   }
 }
