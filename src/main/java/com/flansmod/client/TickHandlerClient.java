@@ -100,7 +100,7 @@ public class TickHandlerClient
 		if(event.type == ElementType.CROSSHAIRS && mc.thePlayer != null && mc.thePlayer.getHeldItem() != null && mc.thePlayer.getHeldItem().getItem() instanceof ItemGun)
 		{
 			if(!((ItemGun)mc.thePlayer.getHeldItem().getItem()).type.showCrosshair || FlansModClient.currentScope != null) {
-				   event.setCanceled(true);
+//				   event.setCanceled(true);
 				   return;
 				}
 		}
@@ -127,6 +127,7 @@ public class TickHandlerClient
 					overlayTexture = ((ItemTeamArmour)stack.getItem()).type.overlay;
 				}
 			}
+			
 
 			if(overlayTexture != null)
 			{

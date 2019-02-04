@@ -3,5 +3,9 @@
 		"category" : "player",
 		"sounds" : [ "flansmod:emptyclick" ]
 		
-	}
+	},
+    "ting": {
+        "category" : "player",
+        "sounds" : [ "flansmod:ting" ]
+    }
 }
