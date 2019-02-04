@@ -32,6 +32,8 @@ public class AttachmentType extends PaintableType implements IScope
 	public float flashlightRange = 10F;
 	/** Flashlight strength between 0 and 15 */
 	public int flashlightStrength = 12;
+	/** If true, disable the muzzle flash model */
+	public boolean disableMuzzleFlash = false;
 	
 	//Gun behaviour modifiers
 	/** These stack between attachments and apply themselves to the gun's default spread */
@@ -88,6 +90,8 @@ public class AttachmentType extends PaintableType implements IScope
 	public String zoomOverlay;
 	/** Whether to overlay a texture or not */
 	public boolean hasScopeOverlay = false;
+	/** If true, then this scope will active night vision potion effect*/
+	public boolean hasNightVision = false;
 	
 	@SideOnly(Side.CLIENT)
 	/** Model. Only applicable when the attachment is added to 3D guns */
@@ -125,6 +129,8 @@ public class AttachmentType extends PaintableType implements IScope
 			
 			else if(split[0].equals("Silencer"))
 				silencer = Boolean.parseBoolean(split[1].toLowerCase());
+			else if(split[0].equals("DisableMuzzleFlash") || split[0].equals("DisableFlash"))
+				disableMuzzleFlash = Boolean.parseBoolean(split[1].toLowerCase());
 			
 			//Flashlight settings
 			else if(split[0].equals("Flashlight"))
@@ -203,6 +209,8 @@ public class AttachmentType extends PaintableType implements IScope
 					hasScopeOverlay = false;
 				else zoomOverlay = split[1];
 			}
+			else if(split[0].equals("HasNightVision"))
+				hasNightVision = Boolean.parseBoolean(split[1].toLowerCase());
 		}
 		catch (Exception e)
 		{

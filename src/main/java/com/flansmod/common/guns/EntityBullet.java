@@ -749,7 +749,8 @@ public class EntityBullet extends EntityShootable implements IEntityAdditionalSp
 				worldObj.spawnParticle("bubble", posX - motionX * bubbleMotion, posY - motionY * bubbleMotion,
 						posZ - motionZ * bubbleMotion, motionX, motionY + 0.1F, motionZ);
 			}
-			// drag = type.dragInWater;
+			drag = type.dragInWater;
+
 		}
 		if (!isInWater() || !type.torpedo) {
 			motionX *= drag;

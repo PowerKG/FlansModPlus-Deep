@@ -2,6 +2,7 @@ package com.flansmod.client.model;
 
 import java.util.Random;
 
+import com.flansmod.client.FlansModClient;
 import com.flansmod.common.vector.Vector3f;
 
 public class GunAnimations 
@@ -12,7 +13,7 @@ public class GunAnimations
 	/** (Purely aesthetic) gun animation variables */
 	public boolean isGunEmpty;
 	/** Recoil */
-	public float gunRecoil = 0F, lastGunRecoil = 0F;
+	public float gunRecoil = 0F, lastGunRecoil = 0F, recoilAmount = 0.33F;
 	/** Slide */
 	public float gunSlide = 0F, lastGunSlide = 0F;
 	/** Delayed Reload Animations */
@@ -29,6 +30,7 @@ public class GunAnimations
 	public boolean reloading = false;
 	public float reloadAnimationTime = 0;
 	public float reloadAnimationProgress = 0F, lastReloadAnimationProgress = 0F;
+	public int reloadAmmoCount = 1;
 
 	public float minigunBarrelRotation = 0F;
 	public float minigunBarrelRotationSpeed = 0F;
@@ -76,6 +78,7 @@ public class GunAnimations
 				//Pump it!
 				pumping = true;	
 				lastPumped = pumped = -1F;
+				FlansModClient.shotState = 1;
 			}
 			
 		}
@@ -149,7 +152,7 @@ public class GunAnimations
 		//Recoil model
 		lastGunRecoil = gunRecoil;
 		if(gunRecoil > 0)
-			gunRecoil *= 0.5F;
+			gunRecoil *= 0.7F;
 
 		//Slide model
 		lastGunSlide = gunSlide;
@@ -189,9 +192,13 @@ public class GunAnimations
 	
 	public void doShoot(int pumpDelay, int pumpTime, int hammerDelay, float hammerAngle, float althammerAngle, int casingDelay)
 	{
+		Random r = new Random();
+
+		//Accumulative recoil function
+		lastGunRecoil = gunRecoil += recoilAmount;
+
 		minigunBarrelRotationSpeed += 2F;
 		lastGunSlide = gunSlide = 1F;
-		lastGunRecoil = gunRecoil = 1F;
 		timeUntilPump = pumpDelay;
 		timeToPumpFor = pumpTime;
 		timeUntilPullback = hammerDelay;
@@ -199,8 +206,7 @@ public class GunAnimations
 		hammerRotation = hammerAngle;
 		althammerRotation = althammerAngle;
 		muzzleFlashTime = 2;
-        
-		Random r = new Random();
+
 		int Low = -1;
 		int High = 3;
 		int result = r.nextInt(High-Low) + Low;
@@ -212,9 +218,14 @@ public class GunAnimations
         casingRandom.y = ((r.nextFloat()*2)-1);
         casingRandom.z = ((r.nextFloat()*2)-1);
 		casingStage = 0;
+		
+		if(pumpDelay == 0)
+		{
+			FlansModClient.shotState = 1;
+		}
 	}
 		
-	public void doReload(int reloadTime, int pumpDelay, int pumpTime, int chargeDelay, int chargeTime)
+	public void doReload(int reloadTime, int pumpDelay, int pumpTime, int chargeDelay, int chargeTime, int ammoCount)
 	{
 		reloading = true;
 		lastReloadAnimationProgress = reloadAnimationProgress = 0F;
@@ -223,6 +234,8 @@ public class GunAnimations
 		timeToPumpFor = pumpTime;
 		timeUntilCharge = chargeDelay;
 		timeToChargeFor = chargeTime;
+		reloadAmmoCount = ammoCount;
+		FlansModClient.lastBulletReload = ammoCount - 1;
 	}
 	
 	public void doMelee(int meleeTime)

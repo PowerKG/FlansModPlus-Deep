@@ -64,7 +64,7 @@ public class EntitySeat extends Entity implements IControllable, IEntityAddition
 	/** For smooth renderering */
     public RotatedAxes prevPlayerLooking;
 	/** Delay ticker for shooting guns */
-	public int gunDelay;
+	public float gunDelay;
 	/** Minigun speed */
 	public float minigunSpeed;
 	/** Minigun angle for render */
@@ -141,7 +141,6 @@ public class EntitySeat extends Entity implements IControllable, IEntityAddition
 		//prevPosX = posX;
 		//prevPosY = posY;
 		//prevPosZ = posZ;
-		
 
 		if(driver && riddenByEntity==null)
 		{
@@ -171,6 +170,14 @@ public class EntitySeat extends Entity implements IControllable, IEntityAddition
 
 		if(driveable == null)
 			return;
+		
+		if(driveable.isDead())
+		{
+			for(EntitySeat seat : this.driveable.seats)
+			{
+				seat.setDead();
+			}
+		}
 
 		EntityDriveable entD;
 		entD = (EntityDriveable)worldObj.getEntityByID(driveableID);
@@ -785,9 +792,10 @@ public class EntitySeat extends Entity implements IControllable, IEntityAddition
 	public void setDead()
 	{
 		if (worldObj.isRemote) {
-			if (exists) {
+			if (driveable.isDead) {
 				// Print.spam(1, "Received 'setDead()' call, but ignoring it since it wasn't
 				// sent from the server.");
+				super.setDead();
 			} else {
 				super.setDead();
 			}

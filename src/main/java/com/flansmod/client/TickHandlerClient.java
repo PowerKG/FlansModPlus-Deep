@@ -95,14 +95,25 @@ public class TickHandlerClient
 	public void eventHandler(RenderGameOverlayEvent event)
 	{
 		Minecraft mc = Minecraft.getMinecraft();
-
-		//Remove crosshairs if looking down the sights of a gun
-		if(event.type == ElementType.CROSSHAIRS && mc.thePlayer != null && mc.thePlayer.getHeldItem() != null && mc.thePlayer.getHeldItem().getItem() instanceof ItemGun)
+		//If main config is set to false, blanket disable crosshairs (client synced)
+		if(!FlansMod.crosshairEnable && event.type == ElementType.CROSSHAIRS && mc.thePlayer != null && mc.thePlayer.getHeldItem() != null && mc.thePlayer.getHeldItem().getItem() instanceof ItemGun)
 		{
-			if(!((ItemGun)mc.thePlayer.getHeldItem().getItem()).type.showCrosshair || FlansModClient.currentScope != null) {
-//				   event.setCanceled(true);
-				   return;
+			event.setCanceled(true);
+			return;
+		}
+		//Otherwise, fall back to weapon config settings (default false)
+		else
+		{
+			//Remove crosshairs if looking down the sights of a gun
+			if(event.type == ElementType.CROSSHAIRS && mc.thePlayer != null && mc.thePlayer.getHeldItem() != null && mc.thePlayer.getHeldItem().getItem() instanceof ItemGun)
+			{
+				if(!((ItemGun)mc.thePlayer.getHeldItem().getItem()).type.showCrosshair || FlansModClient.currentScope != null) 
+				{
+					event.setCanceled(true);
+					return;
+
 				}
+			}
 		}
 
 		ScaledResolution scaledresolution = new ScaledResolution(FlansModClient.minecraft, FlansModClient.minecraft.displayWidth, FlansModClient.minecraft.displayHeight);
@@ -154,7 +165,7 @@ public class TickHandlerClient
 			}
 		}
 
-	    if(!event.isCancelable() && event.type == ElementType.HOTBAR)
+	    if(!event.isCancelable() && event.type == ElementType.HOTBAR && FlansMod.bulletGuiEnable)
 	    {
 			//Player ammo overlay
 			if(mc.thePlayer != null)
@@ -353,15 +364,19 @@ public class TickHandlerClient
 					}
 				}
 			}
-
 			//RenderHitCrossHair
 			if(EntityBullet.hitCrossHair)
 			{
 				tickcount = 20;
 				EntityBullet.hitCrossHair = false;
 			}
-			if(tickcount > 0 && FlansMod.hitCrossHairEnable == true)
+			EntityPlayer player = Minecraft.getMinecraft().thePlayer;
+			ItemStack currentHeldItem = player.getCurrentEquippedItem();
+			if(tickcount > 0 && FlansMod.hitCrossHairEnable == true && currentHeldItem != null && currentHeldItem.getItem() instanceof ItemGun)
 			{
+				ItemStack stack = mc.thePlayer.inventory.getCurrentItem();
+				ItemGun gunItem = (ItemGun)stack.getItem();
+				GunType gunType = gunItem.type;
 				FlansModClient.minecraft.entityRenderer.setupOverlayRendering();
 				GL11.glEnable(3042 /* GL_BLEND */);
 				GL11.glDisable(2929 /* GL_DEPTH_TEST */);
@@ -373,9 +388,21 @@ public class TickHandlerClient
 						FlansMod.hitCrossHairColor[3],
 						FlansMod.hitCrossHairColor[0] * (float)tickcount / 20);
 				GL11.glDisable(3008 /* GL_ALPHA_TEST */);
-
-				mc.renderEngine.bindTexture(new ResourceLocation("flansmod", "gui/CrossHair.png"));
-
+				//Custom hit marker GUI if set in gun config
+				if(gunType.hitTexture != null)
+				{
+					mc.renderEngine.bindTexture(FlansModResourceHandler.getAuxiliaryTexture(gunType.hitTexture));
+				}
+				//Default hit marker GUI
+				else if (FlansMod.hdHitCrosshair == true)
+				{
+					mc.renderEngine.bindTexture(new ResourceLocation("flansmod", "gui/HDCrossHair.png"));
+				}
+				else
+				{
+					mc.renderEngine.bindTexture(new ResourceLocation("flansmod", "gui/CrossHair.png"));
+				}
+				
 				tessellator.startDrawingQuads();
 				tessellator.addVertexWithUV(i / 2 - 2 * j, j, -90D, 0.0D, 1.0D);
 				tessellator.addVertexWithUV(i / 2 + 2 * j, j, -90D, 1.0D, 1.0D);

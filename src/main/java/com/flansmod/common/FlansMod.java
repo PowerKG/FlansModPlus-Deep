@@ -33,6 +33,8 @@ import com.flansmod.common.driveables.mechas.ItemMechaAddon;
 import com.flansmod.common.driveables.mechas.MechaItemType;
 import com.flansmod.common.driveables.mechas.MechaType;
 import com.flansmod.common.eventhandlers.PlayerDeathEventListener;
+import com.flansmod.common.eventhandlers.PlayerLoginEventListener;
+import com.flansmod.common.eventhandlers.ServerTickEvent;
 import com.flansmod.common.guns.AAGunType;
 import com.flansmod.common.guns.AttachmentType;
 import com.flansmod.common.guns.BulletType;
@@ -94,7 +96,6 @@ import cpw.mods.fml.common.registry.GameRegistry;
 import cpw.mods.fml.relauncher.Side;
 import me.kg.flansmod.deep.FlansModDeep;
 import net.minecraft.block.material.Material;
-import net.minecraft.client.Minecraft;
 import net.minecraft.command.CommandHandler;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.item.EntityItem;
@@ -119,19 +120,28 @@ public class FlansMod {
 	public static final String VERSION = "@VERSION@";
 	@Instance(MODID)
 	public static FlansMod INSTANCE;
+    public static boolean printDebugLog = true;
+    public static boolean printStackTrace = false;
+    public static int noticeSpawnKillTime = 10;
+    public static boolean gunCarryLimitEnable = false;
+    public static int gunCarryLimit = 3;
+    public static int breakableArmor = 0;
+    public static int defaultArmorDurability = 500;
+    public static boolean armsEnable = true;
+    public static boolean casingEnable = true;
+    public static boolean crosshairEnable = false;
+    public static boolean hitCrossHairEnable = true;
+    public static boolean hdHitCrosshair = false;
+	public static boolean bulletGuiEnable = true;
+    public static float hitCrossHairColor[] = new float[]{ 1.0F, 1.0F, 1.0F, 1.0F };
+    public static boolean addGunpowderRecipe = true;
+    public static boolean addAllPaintjobsToCreative = false;
+    public static int teamsConfigInteger = 32;
+    public static String teamsConfigString = "Hello!";
+    public static boolean teamsConfigBoolean = false;
 	public static int generalConfigInteger = 32;
 	public static String generalConfigString = "Hello!";
-	public static boolean printDebugLog = true;
-	public static boolean printStackTrace = false;
-	public static int noticeSpawnKillTime = 10;
-	public static boolean casingEnable = true;
-	public static boolean hitCrossHairEnable = true;
-	public static float hitCrossHairColor[] = new float[] { 1.0F, 1.0F, 1.0F, 1.0F };
-	public static boolean addGunpowderRecipe = true;
-	public static boolean addAllPaintjobsToCreative = true;
-	public static int teamsConfigInteger = 32;
-	public static String teamsConfigString = "Hello!";
-	public static boolean teamsConfigBoolean = false;
+
 	@SidedProxy(clientSide = "com.flansmod.client.ClientProxy", serverSide = "com.flansmod.common.CommonProxy")
 	public static CommonProxy proxy;
 	public static int ticker = 0;
@@ -317,11 +327,13 @@ public class FlansMod {
 		// TODO : Re-do chunk loading
 		ForgeChunkManager.setForcedChunkLoadingCallback(this, new ChunkLoadingHandler());
 
-		// Config
-		FMLCommonHandler.instance().bus().register(INSTANCE);
-		// Starting the EventListener
-		new PlayerDeathEventListener();
-
+		//Config
+        FMLCommonHandler.instance().bus().register(INSTANCE);
+        //Starting the EventListener
+        new PlayerDeathEventListener();
+        new PlayerLoginEventListener();
+        new ServerTickEvent();
+        
 		FlansModDeep.instance.init(event);
 
 		log("Loading complete.");

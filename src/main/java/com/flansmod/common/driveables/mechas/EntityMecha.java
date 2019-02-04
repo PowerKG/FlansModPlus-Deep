@@ -78,7 +78,7 @@ public class EntityMecha extends EntityDriveable
     public MechaInventory inventory;
     public float legSwing = 0;
     /** Used for shooting guns */
-    public int shootDelayLeft = 0, shootDelayRight = 0;
+    public float shootDelayLeft = 0, shootDelayRight = 0;
     /** Used for gun sounds */
     public int soundDelayLeft = 0, soundDelayRight = 0;
     /** The coords of the blocks being destroyed */
@@ -400,7 +400,7 @@ public class EntityMecha extends EntityDriveable
 						gunType.setSecondaryFire(heldStack, false);
 				
 				//Get the correct shoot delay
-				int delay = left ? shootDelayLeft : shootDelayRight;
+				float delay = left ? shootDelayLeft : shootDelayRight;
 				
 				//If we can shoot
 				if(delay <= 0)

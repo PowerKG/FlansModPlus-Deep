@@ -46,6 +46,8 @@ gradlew
 gradlew.bat
 classes/production/
 src/main/java/com/flansmod/client/model/dwfirearms/
+src/main/java/com/flansmod/client/model/mpp/
+src/main/java/com/flansmod/client/model/W44/
 README.txt
 MinecraftForge-License.txt
 MinecraftForge-Credits.txt

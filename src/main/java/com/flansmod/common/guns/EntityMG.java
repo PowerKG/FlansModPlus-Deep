@@ -41,7 +41,7 @@ public class EntityMG extends Entity implements IEntityAdditionalSpawnData
 	public ItemStack ammo;
 	public int reloadTimer;
 	public int soundDelay;
-	public int shootDelay;
+	public float shootDelay;
 	public static List<EntityMG> mgs = new ArrayList<EntityMG>();
 	public EntityPlayer gunner;
 	//Server side

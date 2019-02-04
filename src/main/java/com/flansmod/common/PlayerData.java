@@ -41,7 +41,7 @@ public class PlayerData
 	/** The MG this player is using */
 	public EntityMG mountingGun;
 	/** Tickers to stop shooting too fast */
-	public int shootTimeRight, shootTimeLeft;
+	public float shootTimeRight, shootTimeLeft;
 	/** Stops player shooting immediately after swapping weapons */
 	public int shootClickDelay;
 	/** True if this player is shooting */

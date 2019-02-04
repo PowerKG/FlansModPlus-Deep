@@ -1,11 +1,14 @@
 {
-	"emptyclick": {
-		"category" : "player",
-		"sounds" : [ "flansmod:emptyclick" ]
-		
-	},
-    "ting": {
-        "category" : "player",
-        "sounds" : [ "flansmod:ting" ]
-    }
+  "emptyclick": {
+    "category": "player",
+    "sounds": ["flansmod:emptyclick"]
+  },
+  "defaultshellinsert": {
+    "category": "player",
+    "sounds": ["flansmod:defaultshellinsert"]
+  },
+  "ting": {
+    "category" : "player",
+    "sounds" : [ "flansmod:ting" ]
+  }
 }

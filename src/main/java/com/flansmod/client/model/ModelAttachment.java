@@ -1,5 +1,6 @@
 package com.flansmod.client.model;
 
+import com.flansmod.common.vector.Vector3f;
 import net.minecraft.client.model.ModelBase;
 
 import com.flansmod.client.tmt.ModelRendererTurbo;
@@ -20,6 +21,8 @@ public class ModelAttachment extends ModelBase
 	/** Visual recoil of the gun when firing */
 	public float recoilDistance = 2F / 16F;
 	public float recoilAngle = -8F;
+	/** Offset the flash model if enabled */
+	public Vector3f attachmentFlashOffset = new Vector3f(0F, 0F, 0F);
 	
 	public void renderAttachment(float f)
 	{

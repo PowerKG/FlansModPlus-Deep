@@ -97,7 +97,7 @@ public class GuiGunModTable extends GuiContainer
 
 			fontRendererObj.drawString(String.valueOf(roundFloat(gunType.getDamage(gunStack), 2)), 241, 62, 0x404040);
 			fontRendererObj.drawString(String.valueOf(roundFloat(gunType.getSpread(gunStack), 2)), 241, 74, 0x404040);
-			fontRendererObj.drawString(String.valueOf(roundFloat(gunType.getRecoilPitch(gunStack), 2)), 241, 86, 0x404040);
+			fontRendererObj.drawString(String.valueOf(roundFloat(gunType.getRecoilDisplay(gunStack), 2)), 241, 86, 0x404040);
 			fontRendererObj.drawString(String.valueOf(roundFloat(reloadt / 20, 2)) + "s", 241, 98, 0x404040);
 
 			//Draw attachment tooltips
@@ -153,7 +153,7 @@ public class GuiGunModTable extends GuiContainer
 					inventorySlots.getSlot(allowBools.length + 1 + x).yDisplayPosition = 115;
 				}
 			}
-
+			//Calculates yellow stat bar
 			int[] stats = { Math.round(gunType.getDamage(gunStack)) * 4, Math.round(gunType.getSpread(gunStack)) * 4,
 					Math.round(gunType.getRecoilPitch(gunStack)) * 4, (reloadt / 20) * 8};
 			displayGunValues(stats);

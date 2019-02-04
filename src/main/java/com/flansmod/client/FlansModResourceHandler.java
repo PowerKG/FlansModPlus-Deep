@@ -17,6 +17,7 @@ public class FlansModResourceHandler
 	private static HashMap<Paintjob, ResourceLocation> paintjobIconMap = new HashMap<Paintjob, ResourceLocation>();
 	private static HashMap<String, ResourceLocation> scopeMap = new HashMap<String, ResourceLocation>();
 	private static HashMap<String, ResourceLocation> soundMap = new HashMap<String, ResourceLocation>();
+	private static HashMap<String, ResourceLocation> auxiliaryMap = new HashMap<String, ResourceLocation>();
 	
 	public static ResourceLocation getIcon(PaintableType paintableType, Paintjob paintjob)
 	{
@@ -39,7 +40,8 @@ public class FlansModResourceHandler
 		iconMap.put(infoType, resLoc);
 		return resLoc;
 	}	
-	
+
+	/** Get texture from an InfoType object */
 	public static ResourceLocation getTexture(InfoType infoType)
 	{
 		if(textureMap.containsKey(infoType))
@@ -97,6 +99,18 @@ public class FlansModResourceHandler
 		}
 		ResourceLocation resLoc = new ResourceLocation("flansmod", "skins/" + paintjob.textureName + ".png");
 		paintjobMap.put(paintjob, resLoc);
+		return resLoc;
+	}
+
+	/** Get texture from gun auxiliary elements such as casing, muzzle flash */
+	public static ResourceLocation getAuxiliaryTexture(String texture)
+	{
+		if(auxiliaryMap.containsKey(texture))
+		{
+			return auxiliaryMap.get(texture);
+		}
+		ResourceLocation resLoc = new ResourceLocation("flansmod", "skins/" + texture + ".png");
+		auxiliaryMap.put(texture, resLoc);
 		return resLoc;
 	}
 }

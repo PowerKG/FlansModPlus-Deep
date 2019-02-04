@@ -8,24 +8,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
-import net.minecraft.block.Block;
-import net.minecraft.block.material.Material;
-import net.minecraft.enchantment.EnchantmentProtection;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.item.EntityTNTPrimed;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.init.Blocks;
-import net.minecraft.network.play.server.S27PacketExplosion;
-import net.minecraft.util.AxisAlignedBB;
-import net.minecraft.util.DamageSource;
-import net.minecraft.util.MathHelper;
-import net.minecraft.util.Vec3;
-import net.minecraft.world.ChunkPosition;
-import net.minecraft.world.Explosion;
-import net.minecraft.world.World;
-
 import com.flansmod.common.FlansMod;
 import com.flansmod.common.driveables.EntityDriveable;
 import com.flansmod.common.driveables.EntityPlane;
@@ -33,9 +15,26 @@ import com.flansmod.common.driveables.EntitySeat;
 import com.flansmod.common.driveables.EntityVehicle;
 import com.flansmod.common.driveables.EntityWheel;
 import com.flansmod.common.network.PacketExplosion;
-import com.flansmod.common.network.PacketFlak;
 import com.flansmod.common.network.PacketParticle;
 import com.flansmod.common.types.InfoType;
+
+import net.minecraft.block.Block;
+import net.minecraft.enchantment.EnchantmentProtection;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.entity.item.EntityTNTPrimed;
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.init.Blocks;
+import net.minecraft.util.AxisAlignedBB;
+import net.minecraft.util.DamageSource;
+import net.minecraft.util.MathHelper;
+import net.minecraft.util.Vec3;
+import net.minecraft.world.ChunkPosition;
+import net.minecraft.world.Explosion;
+import net.minecraft.world.World;
+import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.event.world.ExplosionEvent;
 
 public class FlansModExplosion extends Explosion
 {
@@ -51,6 +50,7 @@ public class FlansModExplosion extends Explosion
     private final float damageVsPlane;
     private final float damageVsVehicle;
     public boolean breakBlocks;
+    public boolean canceled = false;
 
 	public FlansModExplosion(World w, Entity e, EntityPlayer p, InfoType t,
 			double x, double y, double z, float r, boolean breakBlocks,
@@ -72,6 +72,10 @@ public class FlansModExplosion extends Explosion
         doExplosionB(true);
         spawnParticle(smokeCount, debrisCount);
 
+        ExplosionEvent.Start event = new ExplosionEvent.Start(w, this);
+        MinecraftForge.EVENT_BUS.post(event);
+        canceled = event.isCanceled();
+        
         if(!worldObj.isRemote)
         {
             for (Object playerEntity : worldObj.playerEntities) {
@@ -141,7 +145,9 @@ public class FlansModExplosion extends Explosion
             }
         }
 
-        affectedBlockPositions.addAll(hashset);
+        if(!canceled)
+        	affectedBlockPositions.addAll(hashset);
+        
         explosionSize *= 2.0F;
         int i = MathHelper.floor_double(explosionX - explosionSize - 1.0D);
         int j = MathHelper.floor_double(explosionX + explosionSize + 1.0D);
@@ -207,8 +213,6 @@ public class FlansModExplosion extends Explosion
             }
         }
         explosionSize = f;
-        net.minecraftforge.event.ForgeEventFactory.onExplosionDetonate(worldObj, this, new ArrayList(), this.explosionSize);
-//         net.minecraftforge.event.ForgeEventFactory.onExplosionStart(worldObj, this);
     }
 
 	public void spawnParticle(int numSmoke, int numDebris)

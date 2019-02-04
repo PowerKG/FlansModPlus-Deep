@@ -32,7 +32,6 @@ public class ModelGun extends ModelBase
 	public ModelRendererTurbo[] altbreakActionModel = new ModelRendererTurbo[0];
     public ModelRendererTurbo[] slideModel = new ModelRendererTurbo[0];
     public ModelRendererTurbo[] altslideModel = new ModelRendererTurbo[0];
-	public ModelRendererTurbo[] casingModel = new ModelRendererTurbo[0];
     public ModelRendererTurbo[] pumpModel = new ModelRendererTurbo[0];
     public ModelRendererTurbo[] chargeModel = new ModelRendererTurbo[0];
     public ModelRendererTurbo[] altpumpModel = new ModelRendererTurbo[0];
@@ -54,9 +53,8 @@ public class ModelGun extends ModelBase
 	public Vector3f accessoryAttachPoint = new Vector3f();
 
 	//Muzzle flash models
-	public ModelRendererTurbo flashModel[][] = new ModelRendererTurbo[0][0];
+	public Vector3f defaultBarrelFlashPoint = new Vector3f(0,0,0);
 	public Vector3f muzzleFlashPoint = new Vector3f(0,0,0);
-	public Vector3f attachmentFlashOffset = new Vector3f(0,0,0);
 	public boolean hasFlash = false;
 
 	//Arms rendering
@@ -87,27 +85,50 @@ public class ModelGun extends ModelBase
 	public boolean rightHandAmmo = false;
 	public boolean leftHandAmmo = false;
 
-	//Various animation parameters
+	/** Recoil and slide based parameters */
 	public float gunSlideDistance = 1F / 4F;
 	public float altgunSlideDistance = 1F / 4F;
 	public float RecoilSlideDistance = 2F / 16F;
 	public float RotateSlideDistance = -3F;
-    
-    //  Used for casing ejection animation
+	public float ShakeDistance = 0F;
+	/** Select an amount of recoil per shot, between 0 and 1 */
+	public float recoilAmount = 0.33F;
+
+	/** Casing and muzzle flash parameters */
     //  Total distance to translate
     public Vector3f casingAnimDistance = new Vector3f(0, 0, 16);
     //  Total range in variance for random motion
     public Vector3f casingAnimSpread = new Vector3f(2, 4, 4);
     //  Number of ticks (I guess?) to complete movement 
     public int casingAnimTime = 20;
-    //  Rotation of the casing, 180° is the total rotation. If you do not understand rotation vectors, like me, just use the standard value here.
+    //  Rotation of the casing, 180 is the total rotation. If you do not understand rotation vectors, like me, just use the standard value here.
     public Vector3f casingRotateVector = new Vector3f(0.1F, 1F, 0.1F);
-	// Time until casing is ejected
+	public Vector3f casingAttachPoint = new Vector3f();
+	// Time before the casing is ejected from gun
 	public int casingDelay = 0;
-    
+	// Scale the bullet casing separately from gun
+	public float caseScale = 1F;
+	public float flashScale = 1F;
+
     // Charge handle distance/delay/time
     public float chargeHandleDistance = 0F;
     public int chargeDelay = 0, chargeDelayAfterReload = 0, chargeTime = 1;
+
+	/**
+	 * Bullet Counter Models. Can be used to display bullet count in-game interface.
+	 * Each part is represented by number of rounds remaining per magazine.
+	 *
+	 * - Simple counter will loop through each part. Allows flexibility for bullet counter UI design.
+	 *
+	 * - Adv counter used for counting mags of more than 10, to reduce texture parts. Divides count into digits.
+	 *	 Less flexibility as it requires 10 textures parts at maximum (numbers 0-9).
+	 */
+	public ModelRendererTurbo[] bulletCounterModel = new ModelRendererTurbo[0];
+	public ModelRendererTurbo[][] advBulletCounterModel = new ModelRendererTurbo[0][0];
+	/** For Adv Bullet Counter. Reads in numbers from left hand side when false */
+	public boolean countOnRightHandSide = false;
+	/** Toggle the counters active. Saves render performance. */
+	public boolean isBulletCounterActive, isAdvBulletCounterActive = false;
 
     
 	public EnumAnimationType animationType = EnumAnimationType.NONE;
@@ -125,6 +146,8 @@ public class ModelGun extends ModelBase
 	public float pumpHandleDistance = 4F / 16F;
 	/** For end loaded projectiles */
 	public float endLoadedAmmoDistance = 1F;
+	/** For break action projectiles */
+	public float breakActionAmmoDistance = 1F;
 	/** If true, then the grip attachment will move with the shotgun pump */
 	public boolean gripIsOnPump = false;
 	/** If true, then the gadget attachment will move with the shotgun pump */
@@ -213,13 +236,16 @@ public class ModelGun extends ModelBase
         GL11.glPushAttrib(GL11.GL_LIGHTING_BIT);
 
         GL11.glEnable(GL11.GL_BLEND);
-        //GL11.glDisable(GL11.GL_ALPHA_TEST);
+		//GL11.glDisable(GL11.GL_ALPHA_TEST);
         GL11.glBlendFunc(GL11.GL_ONE, GL11.GL_ONE);
 
-        try {
+        try
+		{
         	lightmapLastX = OpenGlHelper.lastBrightnessX;
         	lightmapLastY = OpenGlHelper.lastBrightnessY;
-        } catch(NoSuchFieldError e) {
+        }
+		catch(NoSuchFieldError e)
+		{
         	optifineBreak = true;
         }
 
@@ -256,11 +282,6 @@ public class ModelGun extends ModelBase
 	public void renderaltSlide(float f)
 	{
 		render(altslideModel, f);
-	}
-
-	public void renderCasing(float f)
-	{
-		render(casingModel, f);
 	}
 
 	public void renderPump(float f)
@@ -347,21 +368,52 @@ public class ModelGun extends ModelBase
 	{
 		render(althammerModel, f);
 	}
-	
-	public void renderFlash (float f, int i)
+
+	public void renderBulletCounter(float f, int k)
 	{
-		if(hasFlash)
+		for(int i = 0; i < bulletCounterModel.length; i++)
 		{
-			glowOn();
-			if(flashModel[i] != null)
-			render(flashModel[i], f);
-			glowOff();
+			if(i == k)
+			{
+				glowOn();
+				bulletCounterModel[i].render(f);
+				glowOff();
+			}
+		}
+	}
+
+	public void renderAdvBulletCounter(float f, int k, boolean rhs)
+	{
+		//Divide the ammo count into array of ints
+		char[] count = String.valueOf(k).toCharArray();
+		int[] digits = new int[count.length];
+
+		for(int i = 0; i < count.length ; i++)
+		{
+			if(!rhs)
+				digits[i] = count[i] - 48;						//read digits left hand side
+			else
+				digits[digits.length - 1 - i] = count[i] - 48;	//read digits right hand side
+		}
+
+		//Loop though the array, and manage ammo count render.
+		for(int i = 0; i < digits.length ; i++)
+		{
+			for(int j = 0; j < advBulletCounterModel[i].length; j++)
+			{
+				if (digits[i] == j)
+				{
+					glowOn();
+					advBulletCounterModel[i][j].render(f);
+					glowOff();
+				}
+			}
 		}
 	}
 
 
 	/** For renderering models simply */
-	private void render(ModelRendererTurbo[] models, float f)
+	protected void render(ModelRendererTurbo[] models, float f)
 	{
 		for(ModelRendererTurbo model : models)
 			if(model != null)
@@ -381,7 +433,6 @@ public class ModelGun extends ModelBase
 		flip(fullammoModel);
 		flip(slideModel);
 		flip(altslideModel);
-		flip(casingModel);
 		flip(pumpModel);
 		flip(altpumpModel);
 		flip(chargeModel);
@@ -392,8 +443,9 @@ public class ModelGun extends ModelBase
 		flip(altbreakActionModel);
 		flip(hammerModel);
 		flip(althammerModel);
-		for(ModelRendererTurbo[] model : flashModel)
-			flip(model);
+		flip(bulletCounterModel);
+		for(ModelRendererTurbo[] mod : advBulletCounterModel)
+			flip(mod);
 	}
 
 	protected void flip(ModelRendererTurbo[] model)
@@ -419,7 +471,6 @@ public class ModelGun extends ModelBase
     		translate(fullammoModel, x, y, z);
     		translate(slideModel, x, y, z);
     		translate(altslideModel, x, y, z);
-    		translate(casingModel, x, y, z);
     		translate(pumpModel, x, y, z);
     		translate(altpumpModel, x, y, z);
     		translate(chargeModel, x, y, z);
@@ -430,8 +481,9 @@ public class ModelGun extends ModelBase
     		translate(altbreakActionModel, x, y, z);
     		translate(hammerModel, x, y, z);
     		translate(althammerModel, x, y, z);
-			for(ModelRendererTurbo[] model : flashModel)
-				translate(model, x, y, z);
+			translate(bulletCounterModel, x, y, z);
+			for(ModelRendererTurbo[] mod : advBulletCounterModel)
+				translate(mod, x, y, z);
     	}
 	}
 

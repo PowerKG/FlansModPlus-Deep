@@ -63,7 +63,9 @@ public class BulletType extends ShootableType
 
 	public ArrayList<PotionEffect> hitEffects = new ArrayList<PotionEffect>();
 
+	/** Number of bullets to fire per shot if allowNumBulletsByBulletType = true */
 	public int numBullets = -1;
+	/** Ammo based spread setting if allowSpreadByBullet = true */
 	public float bulletSpread = -1;
 
 	public float dragInAir   = 0.99F;
