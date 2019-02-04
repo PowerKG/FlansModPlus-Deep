@@ -1077,6 +1077,7 @@ public class ItemGun extends Item implements IPaintableItem {
 								}
 							} else {
 								Entity entity = (Entity) obj;
+								if(data.lastMeleePositions!=null) {
 								if (entity != player && !entity.isDead
 										&& (entity instanceof EntityLivingBase || entity instanceof EntityAAGun)) {
 									MovingObjectPosition mop = entity.boundingBox.calculateIntercept(
@@ -1098,7 +1099,7 @@ public class ItemGun extends Item implements IPaintableItem {
 
 										hits.add(new EntityHit(entity, hitLambda));
 									}
-								}
+								}}
 							}
 						}
 
