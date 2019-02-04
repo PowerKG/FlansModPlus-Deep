@@ -94,11 +94,16 @@ public class TickHandlerClient
 	@SubscribeEvent
 	public void eventHandler(RenderGameOverlayEvent event)
 	{
+		
 		Minecraft mc = Minecraft.getMinecraft();
 		//If main config is set to false, blanket disable crosshairs (client synced)
 		if(!FlansMod.crosshairEnable && event.type == ElementType.CROSSHAIRS && mc.thePlayer != null && mc.thePlayer.getHeldItem() != null && mc.thePlayer.getHeldItem().getItem() instanceof ItemGun)
 		{
-			event.setCanceled(true);
+			if( FlansModClient.currentScope != null)
+			{
+				event.setCanceled(true);
+			}
+//			event.setCanceled(true);
 			return;
 		}
 		//Otherwise, fall back to weapon config settings (default false)

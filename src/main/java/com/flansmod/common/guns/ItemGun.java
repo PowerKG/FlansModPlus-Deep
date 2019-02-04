@@ -148,10 +148,14 @@ public class ItemGun extends Item implements IPaintableItem {
 
 			int shot = (tag.hasKey("shot") ? tag.getInteger("shot") : 0);
 
+			System.out.println(shot+":"+amount);
+			
 			int newShot = shot + amount;
-			if (newShot > stack.getMaxDamage())
+			if (stack.getMaxDamage()!=-1&&newShot > stack.getMaxDamage())
 				newShot = stack.getMaxDamage();
-
+			
+			System.out.println(newShot);
+			
 			tag.setInteger("shot", newShot);
 			stack.setTagCompound(tag);
 		}
